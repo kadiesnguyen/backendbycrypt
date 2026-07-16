@@ -1,0 +1,73 @@
+<include file="Public:header"/>
+<script type="text/javascript" src="__PUBLIC__/layer/laydate/laydate.js"></script>
+<div id="main-content">
+	<div id="top-alert" class="fixed alert alert-error" style="display: none;">
+		<button class="close fixed" style="margin-top: 4px;">&times;</button>
+		<div class="alert-content">Nội dung cảnh báo</div>
+	</div>
+	<div id="main" class="main">
+		<div class="main-title-h">
+			<span class="h1-title"><a href="{:U('User/uponline')}">Quản lý thành viên</a> &gt;&gt;</span>
+			<span class="h1-title"><empty name="data">Thêm người dùng<else/>Chỉnh sửa người dùng</empty></span>
+		</div>
+		<div class="tab-wrap">
+			<div class="tab-content">
+				<form id="form" action="{:U('User/uponline')}" method="post" class="form-horizontal">
+					<div id="tab" class="tab-pane in tab">
+						<div class="form-item cf">
+							<table>
+
+								<tr class="controls">
+									<td class="item-label">Tên đăng nhập :</td>
+									<td>{$info.username}</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">Nội dung phản hồi :</td>
+									<td>{$info.content}</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">Thời gian gửi :</td>
+									<td>{$info.addtime}</td>
+								</tr>
+
+								
+								<tr class="controls">
+									<td class="item-label">Phản hồi  :</td>
+									<td>
+									    <textarea rows="4" cols="30" id="content" name="content" style="font-size:14px;"></textarea>
+									</td> 
+								</tr>
+
+                                <input type="hidden" name="oid" value="{$info.id}" />
+								<tr class="controls">
+									<td class="item-label"></td>
+									<td>
+										<div class="form-item cf">
+											<button class="btn submit-btn ajax-post" id="submit" type="submit" target-form="form-horizontal">Lưu</button>
+											<a class="btn btn-return" href="{:U('User/online')}">Trở lại</a>
+											<notempty name="data.id"><input type="hidden" name="id" value="{$data.id}"/>
+											</notempty>
+										</div>
+									</td>
+								</tr>
+							</table>
+						</div>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+<script type="text/javascript">
+	// Gửi form
+	$('#submit').click(function () {
+		$('#form').submit();
+	});
+</script>
+<include file="Public:footer"/>
+<block name="script">
+	<script type="text/javascript" charset="utf-8">
+		// Đánh dấu điều hướng
+		highlight_subnav("{:U('User/online')}");
+	</script>
+</block>

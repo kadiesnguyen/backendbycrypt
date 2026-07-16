@@ -1,0 +1,201 @@
+<include file="Public:header" />
+<style>
+	.input_12 {
+		width: 400px;
+	}
+</style>
+
+<div id="main-content">
+	<div id="top-alert" class="fixed alert alert-error" style="display: none;">
+		<button class="close fixed" style="margin-top: 4px;">×</button>
+		<div class="alert-content">{:L('Alert content')}</div>
+	</div>
+	<div id="main" class="main">
+		<div class="main-title-h">
+			<span class="h1-title"><a href="{:U('Config/coin')}">{:L('Currency configuration')}</a> >></span>
+			<span class="h1-title">
+				<empty name="data">{:L('Add currency')}
+					<else />{:L('Edit currency')}
+				</empty>
+			</span>
+		</div>
+		<div class="tab-wrap">
+			<div class="tab-content">
+				<form id="form" action="{:U('Config/coinEdit')}" method="post" class="form-horizontal"
+					enctype="multipart/form-data">
+					<div id="tab" class="tab-pane in tab">
+						<div class="form-item cf">
+							<table>
+								<tr class="controls">
+									<td class="item-label">{:L('Coin name')}:</td>
+									<empty name="data['name']">
+										<td><input type="text" class="form-control input_12" name="name" value=""></td>
+										<else />
+										<input type="hidden" class="form-control input_12" name="name"
+											value="{$data.name}">
+										<td>{$data.name}</td>
+									</empty>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Vietnamese name')}:</td>
+									<td><input type="text" class="form-control input_12" name="title"
+											value="{$data['title']}"></td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Currency type')}:</td>
+									<td>
+										<select name="type" class="form-control input_12">
+											<option value="1" <eq name="data.type" value="1">selected</eq>>{:L('Wallet
+												currency')}</option>
+											<option value="2" <eq name="data.type" value="2">selected</eq>>{:L('Platform
+												token')}</option>
+											<option value="3" <eq name="data.type" value="3">selected</eq>>{:L('Purchase
+												currency')}</option>
+										</select>
+									</td>
+									<td class="item-note"></td>
+								</tr>
+								<tr class="controls" id="erc_token_hy">
+									<td class="item-label">{:L('Deposit network')}:</td>
+									<td><input type="text" class="form-control input_12" name="czline"
+											value="{$data['czline']}" autocomplete="off" aria-autocomplete="none"></td>
+									<td class="item-note"></td>
+								</tr>
+								<tr class="controls" id="erc_token_hy">
+									<td class="item-label">{:L('Contract address')}:</td>
+									<td><input type="text" class="form-control input_12" name="czaddress"
+											value="{$data['czaddress']}" autocomplete="off" aria-autocomplete="none">
+									</td>
+									<td class="item-note"></td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Deposit status')}:</td>
+									<td>
+										<select name="czstatus" class="form-control input_12">
+											<option value="1" <eq name="data['czstatus']" value="1">selected</eq>
+												>{:L('Normal')}</option>
+											<option value="2" <eq name="data['czstatus']" value="2">selected</eq>
+												>{:L('Prohibit deposit')}</option>
+										</select>
+									</td>
+									<td class="item-note"></td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Minimum deposit amount')}:</td>
+									<td><input type="text" class="form-control input_12"
+											placeholder="{:L('Minimum deposit placeholder')}" name="czminnum"
+											value="{$data['czminnum']}"></td>
+								</tr>
+								<!-- <tr class="controls">
+									<td class="item-label">Loại phí giao dịch :</td>
+									<td>
+										<select name="sxftype" class="form-control input_12">
+											<option value="1" <eq name="data['sxftype']" value="1">selected</eq>>Phí theo tỷ lệ phần trăm</option>
+											<option value="2" <eq name="data['sxftype']" value="2">selected</eq>>Phí theo số lượng</option>
+										</select>
+									</td>
+									<td class="item-note"></td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">Phần trăm phí :</td>
+									<td><input type="text" class="form-control input_12" placeholder="% (Nhập số từ 0.01-100)" name="txsxf" value="{$data['txsxf']}"></td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">Theo số lượng :</td>
+									<td><input type="text" class="form-control input_12" placeholder="Nhập số từ 0.01-100" name="txsxf_n" value="{$data['txsxf_n']}"></td>
+								</tr> -->
+								<tr class="controls">
+									<td class="item-label">{:L('Minimum withdrawal amount')}:</td>
+									<td><input type="text" class="form-control input_12"
+											placeholder="{:L('Minimum withdrawal placeholder')}" name="txminnum"
+											value="{$data['txminnum']}"></td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Maximum withdrawal amount')}:</td>
+									<td><input type="text" class="form-control input_12"
+											placeholder="{:L('Maximum withdrawal placeholder')}" name="txmaxnum"
+											value="{$data['txmaxnum']}"></td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Withdrawal status')}:</td>
+									<td>
+										<select name="txstatus" class="form-control input_12">
+											<option value="1" <eq name="data['txstatus']" value="1">selected</eq>
+												>{:L('Normal')}</option>
+											<option value="2" <eq name="data['txstatus']" value="2">selected</eq>
+												>{:L('Prohibit withdrawal')}</option>
+										</select>
+									</td>
+									<td class="item-note"></td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Currency status')}:</td>
+									<td>
+										<select name="status" class="form-control input_12">
+											<option value="1" <eq name="data['status']" value="1">selected</eq>
+												>{:L('Available')}</option>
+											<option value="2" <eq name="data['status']" value="2">selected</eq>
+												>{:L('Disabled')}</option>
+										</select>
+									</td>
+									<td class="item-note"></td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">Phí giao dịch tiền tệ :</td>
+									<td><input type="text" class="form-control input_12" placeholder="% (Nhập số từ 0.01-100)" name="bbsxf" value="{$data['bbsxf']}"></td>
+								</tr>
+								<!-- <tr class="controls">
+									<td class="item-label">Phí giao dịch hợp đồng :</td>
+									<td><input type="text" class="form-control input_12" placeholder="% (Nhập số từ 0.01-100)" name="hysxf" value="{$data['hysxf']}"></td>
+								</tr> -->
+								<tr class="controls">
+									<td class="item-label">{:L('Bank conversion')}:</td>
+									<td><input type="text" class="form-control input_12"
+											placeholder="{:L('Bank conversion placeholder')}" name="bank"
+											value="{$data['bank']}"></td>
+									<!-- <td class="item-note">{:L('Bank conversion note')}</td> -->
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Sort')}:</td>
+									<td><input type="text" class="form-control input_12" name="sort"
+											value="{$data.sort}"></td>
+									<td class="item-note"></td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label"></td>
+									<td>
+										<div class="form-item cf">
+											<button class="btn submit-btn ajax-post" id="submit" type="submit"
+												target-form="form-horizontal">{:L('Save')}</button>
+											<a class="btn btn-return"
+												href="{$Think.server.HTTP_REFERER}">{:L('Return')}</a>
+											<notempty name="data.id">
+												<input type="hidden" name="id" value="{$data.id}" />
+											</notempty>
+										</div>
+									</td>
+								</tr>
+							</table>
+						</div>
+					</div>
+				</form>
+				<script type="text/javascript">
+					// Gửi form
+					$('#submit').click(function () {
+						$('#form').submit();
+					});
+				</script>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script type="text/javascript" src="__PUBLIC__/kindeditor/kindeditor-min.js"></script>
+
+<include file="Public:footer" />
+<block name="script">
+	<script type="text/javascript" charset="utf-8">
+		// Đánh dấu điều hướng
+		highlight_subnav("{:U('Config/coin')}");
+	</script>
+</block>

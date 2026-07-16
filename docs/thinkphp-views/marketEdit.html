@@ -1,0 +1,368 @@
+<include file="Public:header"/>
+<div id="main-content">
+	<div id="top-alert" class="fixed alert alert-error" style="display: none;">
+		<button class="close fixed" style="margin-top: 4px;">×</button>
+		<div class="alert-content">{:L('Alert content')}</div>
+	</div>
+	<div id="main" class="main">
+		<div class="main-title-h">
+			<span class="h1-title"><a href="{:U('Trade/market')}">{:L('Market list')}</a> >></span>
+			<span class="h1-title"><empty name="data">{:L('Add new market')}<else/>{:L('Edit market')}</empty></span>
+		</div>
+		<div class="tab-wrap">
+			<div class="tab-content">
+				<form id="form" action="{:U('Trade/marketEdit')}" method="post" class="form-horizontal" enctype="multipart/form-data">
+					<div id="tab" class="tab-pane in tab">
+						<div class="form-item cf">
+							<table>
+								<empty name="data['id']">
+									<tr class="controls">
+										<td class="item-label">{:L('Buy currency code')} :</td>
+										<td><select name="buyname" class="form-control input-10x">
+											<volist name="C['coin']" id="v">
+												<option value="{$v['name']}">{$v['title']}</option>
+											</volist>
+										</select>
+										</td>
+										<td class="item-note"></td>
+									</tr>
+									<tr class="controls">
+										<td class="item-label">{:L('Sell currency code')} :</td>
+										<td><select name="sellname" class="form-control input-10x">
+											<volist name="C['coin']" id="v">
+												<option value="{$v['name']}">{$v['title']}</option>
+											</volist>
+										</select>
+										</td>
+										<td class="item-note"></td>
+									</tr>
+									<else/>
+									<tr class="controls">
+										<td class="item-label">{:L('Market name')} :</td>
+										<td>{$data.name}</td>
+										<td class="item-note"></td>
+									</tr>
+								</empty>
+								<tr class="controls">
+									<td class="item-label">{:L('Trading area')}</td>
+									<td>
+										<select name="jiaoyiqu">
+											<volist name="getCoreConfig" id="v">
+												<option value="{$key}"
+												<eq name="data.jiaoyiqu" value="$key">
+													selected
+												</eq>
+												>{$v}</option>
+											</volist>
+										</select>
+									</td>
+									<td class="item-note"></td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Decimal places')} :</td>
+									<td>
+										<input type="text" class="form-control input-10x" name="round" value="{$data.round}">
+									</td>
+									<td class="item-note">{:L('Decimal places note')}</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Buy transaction fee')} :</td>
+									<td>
+										<input type="text" class="form-control input-10x" name="fee_buy" value="{$data.fee_buy}">
+									</td>
+									<td class="item-note">{:L('Fee note')}</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Sell transaction fee')} :</td>
+									<td>
+										<input type="text" class="form-control input-10x" name="fee_sell" value="{$data.fee_sell}">
+									</td>
+									<td class="item-note">{:L('Fee note')}</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Minimum buy price')} :</td>
+									<td>
+										<empty name="data['buy_min']">
+											<input type="text" class="form-control input-10x" name="buy_min" value="0.0001">
+										<else />
+											<input type="text" class="form-control input-10x" name="buy_min" value="{$data.buy_min}">
+										</empty>
+									</td>
+									<td class="item-note">{:L('Minimum buy price note')}</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Maximum buy price')} :</td>
+									<td>
+										<empty name="data['buy_max']">
+											<input type="text" class="form-control input-10x" name="buy_max" value="10000000">
+										<else />
+											<input type="text" class="form-control input-10x" name="buy_max" value="{$data.buy_max}">
+										</empty>
+									</td>
+									<td class="item-note">{:L('Maximum buy price note')}</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Minimum sell price')} :</td>
+									<td>
+										<empty name="data['sell_min']">
+											<input type="text" class="form-control input-10x" name="sell_min" value="0.0001">
+										<else />
+											<input type="text" class="form-control input-10x" name="sell_min" value="{$data.sell_min}">
+										</empty>
+									</td>
+									<td class="item-note">{:L('Minimum sell price note')}</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Maximum sell price')} :</td>
+									<td>
+										<empty name="data['sell_max']">
+											<input type="text" class="form-control input-10x" name="sell_max" value="10000000">
+										<else />
+											<input type="text" class="form-control input-10x" name="sell_max" value="{$data.sell_max}">
+										</empty>
+									</td>
+									<td class="item-note">{:L('Maximum sell price note')}</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Minimum transaction amount')} :</td>
+									<td>
+										<empty name="data['trade_min']">
+											<input type="text" class="form-control input-10x" name="trade_min" value="0.0001">
+										<else />
+											<input type="text" class="form-control input-10x" name="trade_min" value="{$data.trade_min}">
+										</empty>
+									</td>
+									<td class="item-note">{:L('Minimum transaction amount note')}</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Maximum transaction unit')} :</td>
+									<td>
+										<empty name="data['trade_max']">
+											<input type="text" class="form-control input-10x" name="trade_max" value="10000000">
+										<else />
+											<input type="text" class="form-control input-10x" name="trade_max" value="{$data.trade_max}">
+										</empty>
+									</td>
+									<td class="item-note">{:L('Maximum transaction unit note')}</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Minimum buy transaction amount')} :</td>
+									<td>
+										<empty name="data['trade_buy_num_min']">
+											<input type="text" class="form-control input-10x" name="trade_buy_num_min" value="0.0001">
+										<else />
+											<input type="text" class="form-control input-10x" name="trade_buy_num_min" value="{$data.trade_buy_num_min}">
+										</empty>
+									</td>
+									<td class="item-note">{:L('Minimum buy transaction amount note')}</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Maximum buy transaction amount')} :</td>
+									<td>
+										<empty name="data['trade_buy_num_max']">
+											<input type="text" class="form-control input-10x" name="trade_buy_num_max" value="10000000">
+										<else />
+											<input type="text" class="form-control input-10x" name="trade_buy_num_max" value="{$data.trade_buy_num_max}">
+										</empty>
+									</td>
+									<td class="item-note">{:L('Maximum buy transaction amount note')}</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Minimum sell transaction amount')} :</td>
+									<td>
+										<empty name="data['trade_sell_num_min']">
+											<input type="text" class="form-control input-10x" name="trade_sell_num_min" value="0.0001">
+										<else />
+											<input type="text" class="form-control input-10x" name="trade_sell_num_min" value="{$data.trade_sell_num_min}">
+										</empty>
+									</td>
+									<td class="item-note">{:L('Minimum sell transaction amount note')}</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Maximum sell transaction amount')} :</td>
+									<td>
+										<empty name="data['trade_sell_num_max']">
+											<input type="text" class="form-control input-10x" name="trade_sell_num_max" value="10000000">
+										<else />
+											<input type="text" class="form-control input-10x" name="trade_sell_num_max" value="{$data.trade_sell_num_max}">
+										</empty>
+									</td>
+									<td class="item-note">{:L('Maximum sell transaction amount note')}</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Agent level 1 commission rate')} :</td>
+									<td>
+										<input type="text" class="form-control input-10x" name="invit_1" value="{$data.invit_1}">
+									</td>
+									<td class="item-note">{:L('Commission note')}</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Agent level 2 commission rate')} :</td>
+									<td>
+										<input type="text" class="form-control input-10x" name="invit_2" value="{$data.invit_2}">
+									</td>
+									<td class="item-note">{:L('Commission note')}</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Agent level 3 commission rate')} :</td>
+									<td>
+										<input type="text" class="form-control input-10x" name="invit_3" value="{$data.invit_3}">
+									</td>
+									<td class="item-note">{:L('Commission note')}</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Enable buyer commission')} :</td>
+									<td><select name="invit_buy" class="form-control input-10x">
+										<option value="1" <eq name="data.invit_buy" value="1">selected</eq>>{:L('Enable commission')}</option>
+										<option value="0" <eq name="data.invit_buy" value="0">selected</eq>>{:L('Disable commission')}</option>
+									</select></td>
+									<td class="item-note"></td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Enable seller commission')} :</td>
+									<td><select name="invit_sell" class="form-control input-10x">
+										<option value="1" <eq name="data.invit_sell" value="1">selected</eq>>{:L('Enable commission')}</option>
+										<option value="0" <eq name="data.invit_sell" value="0">selected</eq>>{:L('Disable commission')}</option>
+									</select></td>
+									<td class="item-note"></td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Price increase limit')} :</td>
+									<td>
+										<input type="text" class="form-control input-10x" name="zhang" value="{$data.zhang}">
+									</td>
+									<td class="item-note">{:L('Price limit note')}</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Price decrease limit')} :</td>
+									<td>
+										<input type="text" class="form-control input-10x" name="die" value="{$data.die}">
+									</td>
+									<td class="item-note">{:L('Price limit note')}</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Trading open time')} :</td>
+									<td>
+										<select name="start_time" class="form-control input-10x" style="width:48%;float:left;">
+											<volist name="time_arr" id="vo" key="k">
+												<option value="{$k-1}" <eq name="data.start_time" value="$k-1">selected</eq>>{$vo}时</option>
+											</volist>
+										</select>
+										<select name="start_minute" class="form-control input-10x" style="width:48%;float:right;">
+											<volist name="time_minute" id="vo" key="k">
+												<option value="{$k-1}" <eq name="data.start_minute" value="$k-1">selected</eq>>{$vo}分</option>
+											</volist>
+										</select>
+									</td>
+									<td class="item-note"></td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Trading close time')} :</td>
+									<td>
+										<select name="stop_time" class="form-control input-10x" style="width:48%;float:left;">
+											<volist name="time_arr" id="vo" key="k">
+												<option value="{$k-1}" <eq name="data.stop_time" value="$k-1">selected</eq>>{$vo}时</option>
+											</volist>
+										</select>
+										<select name="stop_minute" class="form-control input-10x" style="width:48%;float:right;">
+											<volist name="time_minute" id="vo" key="k">
+												<option value="{$k-1}" <eq name="data.stop_minute" value="$k-1">selected</eq>>{$vo}分</option>
+											</volist>
+										</select>
+									</td>
+									<td class="item-note"></td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Saturday')} :</td>
+									<td><select name="agree6" class="form-control input-10x">
+										<option value="1" <eq name="data.agree6" value="1">selected</eq>>{:L('Can trade')}</option>
+										<option value="0" <eq name="data.agree6" value="0">selected</eq>>{:L('Cannot trade')}</option>
+									</select></td>
+									<td class="item-note"></td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Sunday')} :</td>
+									<td><select name="agree7" class="form-control input-10x">
+										<option value="1" <eq name="data.agree7" value="1">selected</eq>>{:L('Can trade')}</option>
+										<option value="0" <eq name="data.agree7" value="0">selected</eq>>{:L('Cannot trade')}</option>
+									</select></td>
+									<td class="item-note"></td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Activate trading')} :</td>
+									<td><select name="trade" class="form-control input-10x">
+										<option value="1" <eq name="data.trade" value="1">selected</eq>>{:L('Activate trading')}</option>
+										<option value="0" <eq name="data.trade" value="0">selected</eq>>{:L('Trading prohibited')}</option>
+									</select></td>
+									<td class="item-note"></td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Status')} :</td>
+									<td><select name="status" class="form-control input-10x">
+										<option value="1" <eq name="data.status" value="1">selected</eq>>{:L('Available')}</option>
+										<option value="0" <eq name="data.status" value="0">selected</eq>>{:L('Disabled')}</option>
+									</select></td>
+									<td class="item-note"></td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Enable price reduction')} :</td>
+									<td><select name="shuadan" class="form-control input-10x">
+										<option value="1" <eq name="data.shuadan" value="1">selected</eq>>{:L('Enabled')}</option>
+										<option value="0" <eq name="data.shuadan" value="0">selected</eq>>{:L('Disable')}</option>
+									</select></td>
+									<td class="item-note"></td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Use foreign currency price')} :</td>
+									<td><select name="sdtype" class="form-control input-10x">
+										<option value="1" <eq name="data.sdtype" value="1">selected</eq>>{:L('Enabled')}</option>
+										<option value="0" <eq name="data.sdtype" value="0">selected</eq>>{:L('Disable')}</option>
+									</select></td>
+									<td class="item-note">{:L('Foreign currency price note')}</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Upper price limit')} :</td>
+									<td>
+										<input type="text" class="form-control input-10x" name="sdhigh" value="{$data.sdhigh}">
+									</td>
+									<td class="item-note">Giá hiện tại: {$data.new_price} ({:L('Price limit note dynamic')})</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Lower price limit')} :</td>
+									<td>
+										<input type="text" class="form-control input-10x" name="sdlow" value="{$data.sdlow}">
+									</td>
+									<td class="item-note">Giá hiện tại: {$data.new_price} ({:L('Price limit note dynamic')})</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label"></td>
+									<td>
+										<div class="form-item cf">
+											<button class="btn submit-btn ajax-post" id="submit" type="submit" target-form="form-horizontal">{:L('Submit')}</button>
+											<a class="btn btn-return" href="{$Think.server.HTTP_REFERER}">{:L('Return')}</a>
+											<notempty name="data.id"><input type="hidden" name="id" value="{$data.id}"/>
+											</notempty>
+										</div>
+									</td>
+								</tr>
+							</table>
+						</div>
+					</div>
+				</form>
+				<script type="text/javascript">
+					// Gửi form
+					$('#submit').click(function () {
+						$('#form').submit();
+					});
+				</script>
+			</div>
+		</div>
+	</div>
+</div>
+<include file="Public:footer"/>
+<block name="script">
+	<script type="text/javascript" charset="utf-8">
+		// Đánh dấu điều hướng
+		highlight_subnav("{:U('Trade/market')}");
+	</script>
+</block>

@@ -1,0 +1,78 @@
+<include file="Public:header"/>
+<div id="main-content">
+    <div id="top-alert" class="fixed alert alert-error" style="display: none;">
+        <button class="close fixed" style="margin-top: 4px;">&times;</button>
+        <div class="alert-content">{:L('Alert content')}</div>
+    </div>
+    <div id="main" class="main">
+        <div class="main-title-h">
+            <span class="h1-title">{:L('Deposit Port Configuration')}</span>
+        </div>
+
+        <div class="cf">
+            <div class="fl">
+                <a class="btn btn-success" href="{:U('Config/depositportEdit')}">{:L('Add new')}</a>
+                <button class="btn ajax-post btn-info" url="{:U('Config/depositportStatus',array('type'=>'resume'))}" target-form="ids">{:L('Activate')}</button>
+                <button class="btn ajax-post btn-warning" url="{:U('Config/depositportStatus',array('type'=>'forbid'))}" target-form="ids">{:L('Suspend')}</button>
+                <button class="btn ajax-post confirm btn-danger" url="{:U('Config/depositportStatus',array('type'=>'delete'))}" target-form="ids">{:L('Delete')}</button>
+            </div>
+        </div>
+
+        <div class="data-table table-striped">
+            <table class="">
+                <thead>
+                <tr>
+                    <th class="row-selected"><input class="check-all" type="checkbox"/></th>
+                    <th>ID</th>
+                    <th>{:L('Name')}</th>
+                    <th>{:L('Wallet name')}</th>
+                    <th>{:L('Wallet address')}</th>
+                    <th>{:L('Wallet coin')}</th>
+                    <th>{:L('Status')}</th>
+                    <th>{:L('Action')}</th>
+                </tr>
+                </thead>
+                <tbody>
+                <notempty name="list">
+                    <volist name="list" id="vo">
+                        <tr>
+                            <td><input class="ids" type="checkbox" name="id[]" value="{$vo.id}"/></td>
+                            <td>{$vo.id}</td>
+                            <td>{$vo.name}</td>
+                            <td>{$vo.wallet}</td>
+                            <td>{$vo.address}</td>
+                            <td>{$vo.coin}</td>
+                            <td>
+                                <eq name="vo.status" value="1">
+                                    <b style="color: #10A017;">{:L('Available')}</b>
+                                    <else/>
+                                    <b style="color: #F70408;">{:L('Disabled')}</b>
+                                </eq>
+                            </td>
+                            <td>
+                                <eq name="vo.status" value="1">
+                                    <a class="ajax-get btn btn-warning btn-xs" href="{:U('Config/depositportStatus',array('id'=>$vo['id'],'type'=>'forbid'))}">{:L('Suspend')}</a>
+                                    <else/>
+                                    <a class="ajax-get btn btn-info btn-xs" href="{:U('Config/depositportStatus',array('id'=>$vo['id'],'type'=>'resume'))}">{:L('Activate')}</a>
+                                </eq>
+                                <a href="{:U('Config/depositportEdit?id='.$vo['id'])}" class="btn btn-primary btn-xs">{:L('Edit')}</a>
+                                <a class="ajax-get confirm btn btn-danger btn-xs" href="{:U('Config/depositportStatus',array('id'=>$vo['id'],'type'=>'delete'))}">{:L('Delete')}</a>
+                            </td>
+                        </tr>
+                    </volist>
+                    <else/>
+                    <tr>
+                        <td colspan="7" class="text-center empty-info"><i class="glyphicon glyphicon-exclamation-sign"></i>{:L('No data')}</td>
+                    </tr>
+                </notempty>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<include file="Public:footer"/>
+<block name="script">
+    <script type="text/javascript" charset="utf-8">
+        highlight_subnav("{:U('Config/depositport')}");
+    </script>
+</block>

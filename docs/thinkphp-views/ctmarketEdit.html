@@ -1,0 +1,88 @@
+<include file="Public:header"/>
+<style>
+    .item-note{color:red!important;font-size:14px!important;}
+    .input-10x{width:200px;}
+</style>
+<div id="main-content">
+	<div id="top-alert" class="fixed alert alert-error" style="display: none;">
+		<button class="close fixed" style="margin-top: 4px;">×</button>
+		<div class="alert-content">{:L('Alert content')}</div>
+	</div>
+	<div id="main" class="main">
+		<div class="main-title-h">
+			<span class="h1-title"><a href="{:U('Config/ctmarket')}">{:L('Market configuration')}</a> >></span>
+            <span class="h1-title"><empty name="data">{:L('Add market configuration')}<else/>{:L('Edit market configuration')}</empty></span>
+		</div>
+		<div class="tab-wrap">
+			<div class="tab-content">
+				<form id="form" action="{:U('Config/ctmarketEdit')}" method="post" class="form-horizontal" enctype="multipart/form-data">
+					<div id="tab" class="tab-pane in tab">
+						<div class="form-item cf">
+							<table>
+								<tr class="controls" >
+									<td class="item-label" style="font-size:14px;">{:L('Coin name')}:</td>
+									<td>
+										<input type="text" class="form-control input-10x" name="coinname" value="{$data.coinname}">
+									</td>
+									<td class="item-note" style="font-size:14px;">{:L('Example BTC')}</td>
+								</tr>
+								
+								<tr class="controls">
+									<td class="item-label" style="font-size:14px;">{:L('Display K-line chart')} :</td>
+									<td>
+									    <select name="status" class="form-control input-10x">
+										    <option value="1"<eq name="data.status" value="1">selected</eq>>{:L('Normal')}</option>
+										    <option value="2"<eq name="data.status" value="2">selected</eq>>{:L('Prohibited')}</option>
+									    </select>
+									</td>
+								</tr>
+								
+								<tr class="controls">
+									<td class="item-label" style="font-size:14px;">{:L('Enable trading')} :</td>
+									<td>
+									    <select name="state" class="form-control input-10x">
+										    <option value="1"<eq name="data.state" value="1">selected</eq>>{:L('Normal')}</option>
+										    <option value="2"<eq name="data.state" value="2">selected</eq>>{:L('Prohibited')}</option>
+									    </select>
+									</td>
+								</tr>
+								
+								<tr class="controls">
+									<td class="item-label" style="font-size:14px;">{:L('Sort')}:</td>
+									<td>
+										<input type="text" class="form-control input-10x" name="sort" value="{$data.sort}">
+									</td>
+								</tr>
+
+								<tr class="controls">
+									<td class="item-label"></td>
+									<td>
+										<div class="form-item cf">
+											<button class="btn submit-btn ajax-post" id="submit" type="submit" target-form="form-horizontal">{:L('Submit')}</button>
+											<a class="btn btn-return" href="{$Think.server.HTTP_REFERER}">{:L('Go back')}</a>
+											<notempty name="data.id"><input type="hidden" name="id" value="{$data.id}"/>
+											</notempty>
+										</div>
+									</td>
+								</tr>
+							</table>
+						</div>
+					</div>
+				</form>
+				<script type="text/javascript">
+				// Gửi form
+				$('#submit').click(function () {
+					$('#form').submit();
+				});
+				</script>
+			</div>
+		</div>
+	</div>
+</div>
+<include file="Public:footer"/>
+<block name="script">
+	<script type="text/javascript" charset="utf-8">
+		// Đánh dấu điều hướng
+		highlight_subnav("{:U('Config/ctmarket')}");
+	</script>
+</block>

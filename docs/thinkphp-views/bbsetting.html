@@ -1,0 +1,56 @@
+<include file="Public:header"/>
+<div id="main-content">
+    <div id="top-alert" class="fixed alert alert-error" style="display: none;">
+		<button class="close fixed" style="margin-top: 4px;">×</button>
+		<div class="alert-content">{:L('Alert content')}</div>
+	</div>
+	<div id="main" class="main">
+		<div class="main-title-h">
+			<span class="h1-title">{:L('Coin trading settings')}</span>
+		</div>
+		<div class="tab-wrap">
+			<div class="tab-content">
+				<form id="form" action="{:U('Trade/bbsetting')}" method="post" class="form-horizontal">
+					<div id="tab" class="tab-pane in tab">
+						<div class="form-item cf">
+							<table>
+								<tr class="controls">
+									<td class="item-label" style="width:100px;">{:L('Contract market opening time')}</td>
+									<td style="width:300px;">
+									    <p><input type="text" class="form-control input-10x" name="bb_kstime" value="{$info['bb_kstime']}"></p>
+									    <p style="color:red;">{:L('Market opening time note')}</p>
+									</td>
+								</tr>
+                                <input type="hidden" name="bbid" value="{$info['id']}" />
+								<tr class="controls">
+									<td class="item-label"></td>
+									<td>
+										<div class="form-item cf">
+											<button class="btn submit-btn ajax-post" target-form="form-horizontal" id="submit" type="submit">{:L('Save')}</button>
+											<a class="btn btn-return" href="{$Think.server.HTTP_REFERER}">{:L('Return')}</a>
+										</div>
+									</td>
+								</tr>
+							</table>
+						</div>
+					</div>
+				</form>
+				<script type="text/javascript">
+					// Gửi form
+					$('#submit').click(function(){
+						$('#form').submit();
+					});
+				</script>
+			</div>
+		</div>
+	</div>
+</div>
+<script type="text/javascript">
+	$(function(){
+		// Đánh dấu điều hướng chính
+		$('.config-box').addClass('current');
+		//边导航高亮
+		$('.config-contact').addClass('current');
+	});
+</script>
+<include file="Public:footer"/>

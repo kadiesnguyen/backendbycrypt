@@ -1,0 +1,133 @@
+<include file="Public:header" />
+<div id="main-content">
+	<div id="top-alert" class="fixed alert alert-error" style="display: none;">
+		<button class="close fixed" style="margin-top: 4px;">&times;</button>
+		<div class="alert-content">Nội dung cảnh báo</div>
+	</div>
+	<div id="main" class="main">
+		<div class="main-title-h">
+			<span class="h1-title">Thông tin máy chủ ví</span>
+			<span class="h2-title">>><a href="{:U('Coin/index')}">Danh sách tiền tệ</a></span>
+		</div>
+
+		<div class="tab-wrap">
+
+			<div class="tab-content">
+				<form id="form" action="" method="post" class="form-horizontal">
+					<div id="tab" class="tab-pane in tab">
+						<div class="form-item cf">
+							<table>
+								<tr class="controls">
+									<td class="item-label">Tên ví :</td>
+									<td></td>
+									<td class="item-note">{$data.coin|default="0"}</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">Phiên bản ví :</td>
+									<td></td>
+									<td class="item-note">
+<!--										<eq name="data.coin" value="btc">
+											{$data.c.walletversion|default="0"}
+										<else/>
+											<eq name="data.coin" value="neo">{$data.ver2}
+											<else/>{$data.ver}</eq>
+										</eq>-->
+										{$data.c.walletversion|default="0"}
+									</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">Số giao dịch ví :</td>
+									<td></td>
+									<td class="item-note">
+										{$data.c.txcount|default="0"}
+									</td>
+								</tr>
+
+								<tr class="controls">
+									<td class="item-label">Tổng khối :</td>
+									<td></td>
+									<td class="item-note">
+										<eq name="data.coin" value="btc">
+											{$data.a.headers|default="0"}
+										<else/>
+											<eq name="data.coin" value="neo">{$data.blocks2}
+											<else/>{$data.blocks}</eq>
+										</eq>
+									</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">Khối đã tải :</td>
+									<td></td>
+									<td class="item-note">{$data.a.blocks|default="0"}</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">Tiến trình tải :</td>
+									<td></td>
+									<td class="item-note">
+										<eq name="data.a.blocks" value="$data['a']['headers']"> 
+											<font color="red">Dữ liệu đã tải xong</font> 
+										<else />
+											Dữ liệu đã tải:{$data['b']['verificationprogress']*100}% (Không thể giao dịch trước khi tải xong) 
+										</eq>
+									</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">Tổng số dư ví :</td>
+									<td></td>
+									<td class="item-note">
+										<eq name="data.coin" value="btc">
+											{$data['b']['balance']}
+										<else/>
+											<eq name="data.coin" value="neo">{$data.balance2}
+											<else/>{$data.balance}</eq>
+										</eq>
+									</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">Tổng số dư trong trang web :</td>
+									<td></td>
+									<td class="item-note">{$data['num']}</td>
+								</tr>
+
+								<tr class="controls">
+									<td class="item-label">Phí giao dịch hiện tại :</td>
+									<td></td>
+									<td class="item-note">
+										<eq name="data.coin" value="btc">
+											{$data['b']['paytxfee']}
+										<else/>
+											<eq name="data.coin" value="neo">{$data.payfee2}
+											<else/>{$data.payfee} wei</eq>
+										</eq>
+									</td>
+								</tr>
+
+								<volist name="data['b']" id="vo">
+									<tr class="controls">
+										<td class="item-label">{$key}:</td>
+										<td></td>
+										<td class="item-note">{$vo}</td>
+									</tr>
+								</volist>
+							</table>
+						</div>
+					</div>
+					<br>
+				</form>
+				<script type="text/javascript">
+					// Gửi form
+					$('#submit').click(function(){
+						$('#form').submit();
+					});
+				</script>
+			</div>
+		</div>
+	</div>
+</div>
+<include file="Public:footer" />
+<block name="script">
+	<script type="text/javascript" charset="utf-8">
+		// Đánh dấu điều hướng
+		highlight_subnav("{:U('Config/coin')}");
+	</script>
+</block>

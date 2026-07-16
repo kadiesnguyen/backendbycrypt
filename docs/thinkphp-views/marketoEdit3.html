@@ -1,0 +1,96 @@
+<include file="Public:header"/>
+<div id="main-content">
+	<div id="top-alert" class="fixed alert alert-error" style="display: none;">
+		<button class="close fixed" style="margin-top: 4px;">×</button>
+		<div class="alert-content">{:L('Alert content')}</div>
+	</div>
+	<div id="main" class="main">
+		<div class="main-title-h">
+			<span class="h1-title"><a href="{:U('Config/marketo')}">{:L('Market list')}</a> >></span>
+            <span class="h1-title">{:L('Edit trading robot')}</span>
+		</div>
+		<div class="tab-wrap">
+			<div class="tab-content">
+				<form id="form" action="{:U('Config/marketoEdit2')}" method="post" class="form-horizontal" enctype="multipart/form-data">
+					<div id="tab" class="tab-pane in tab">
+						<div class="form-item cf">
+							<table>
+								<tr class="controls">
+									<td class="item-label">{:L('Market name')} :</td>
+									<td>{$data.name}</td>
+									<td class="item-note"></td>
+								</tr>
+
+								<tr class="controls" style="border-top:1px solid #d0d0d0;">
+									<td class="item-label">{:L('Enable order evaluation robot')} :</td>
+									<td>
+										<select name="shuadan" class="form-control input-10x">
+											<option value="0"
+											<eq name="data.shuadan" value="0">selected</eq>
+											>{:L('Close')}</option>
+											<option value="1"
+											<eq name="data.shuadan" value="1">selected</eq>
+											>{:L('Enable')}</option>
+										</select>
+									</td>
+									<td class="item-note"></td>
+								</tr>
+
+								<tr class="controls">
+									<td class="item-label">{:L('Highest price range')}:</td>
+									<td>
+										<input type="text" class="form-control input-10x" name="sdhigh" value="{$data.sdhigh}">
+									</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Lowest price range')}:</td>
+									<td>
+										<input type="text" class="form-control input-10x" name="sdlow" value="{$data.sdlow}">
+									</td>
+								</tr>
+								
+								<tr class="controls">
+									<td class="item-label">{:L('Maximum quantity in highest price range')}:</td>
+									<td>
+										<input type="text" class="form-control input-10x" name="sdhigh_num" value="{$data.sdhigh_num}" oninput="if(value<{$round})value={$round}">
+									</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Maximum quantity in lowest price range')}:</td>
+									<td>
+										<input type="text" class="form-control input-10x" name="sdlow_num" value="{$data.sdlow_num}" oninput="if(value<{$round})value={$round}">
+									</td>
+								</tr>
+								
+								<tr class="controls">
+									<td class="item-label"></td>
+									<td>
+										<div class="form-item cf">
+											<button class="btn submit-btn ajax-post" id="submit" type="submit" target-form="form-horizontal">{:L('Submit')}</button>
+											<a class="btn btn-return" href="{$Think.server.HTTP_REFERER}">{:L('Go back')}</a>
+											<notempty name="data.id"><input type="hidden" name="id" value="{$data.id}"/>
+											</notempty>
+										</div>
+									</td>
+								</tr>
+							</table>
+						</div>
+					</div>
+				</form>
+				<script type="text/javascript">
+				// Gửi form
+				$('#submit').click(function () {
+					$('#form').submit();
+				});
+				</script>
+			</div>
+		</div>
+	</div>
+</div>
+<include file="Public:footer"/>
+<block name="script">
+	<script type="text/javascript" charset="utf-8">
+		// Đánh dấu điều hướng
+		highlight_subnav("{:U('Config/marketo')}");
+	</script>
+</block>

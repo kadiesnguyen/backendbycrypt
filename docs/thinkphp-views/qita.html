@@ -1,0 +1,206 @@
+<include file="Public:header" />
+
+<div id="main-content">
+
+	<div id="top-alert" class="fixed alert alert-error" style="display: none;">
+		<button class="close fixed" style="margin-top: 4px;">×</button>
+		<div class="alert-content">{:L('Alert content')}</div>
+	</div>
+
+	<div id="main" class="main">
+		<div class="main-title-h">
+			<span class="h1-title">{:L('System parameter settings')}</span>
+		</div>
+
+		<div class="tab-wrap">
+			<div class="tab-content">
+				<form id="form" action="{:U('Config/qitaEdit')}" method="post" class="form-horizontal">
+					<div id="tab" class="tab-pane in tab">
+						<div class="form-item cf">
+							<table>
+								<tr class="controls">
+									<td class="item-label">{:L('Customer service address')} :</td>
+									<td><input type="text" class="form-control input-10x" name="kefu"
+											value="{$data['kefu']}"></td>
+									<td class="item-note" style="color:red;">*{:L('Customer service address note')}</td>
+								</tr>
+
+								<tr class="controls">
+									<td class="item-label">{:L('Appeal page address')} :</td>
+									<td><input type="text" class="form-control input-10x" name="appeal"
+											value="{$data['appeal']}"></td>
+									<td class="item-note" style="color:red;">*{:L('Appeal page address note')}</td>
+								</tr>
+
+								<tr class="controls">
+									<td class="item-label">{:L('Email for sending messages')} :</td>
+									<td><input type="text" class="form-control input-10x" name="smsemail"
+											value="{$data['smsemail']}"></td>
+									<td class="item-note" style="color:red;">*{:L('Email for sending verification code')}</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Email authorization code')} :</td>
+									<td><input type="text" class="form-control input-10x" name="emailcode"
+											value="{$data['emailcode']}"></td>
+									<td class="item-note" style="color:red;">*{:L('Email authorization code note')}</td>
+								</tr>
+
+								<tr class="controls">
+									<td class="item-label">{:L('SMS verification message template')} :</td>
+									<td><input type="text" class="form-control input-10x" name="smstemple"
+											value="{$data['smstemple']}"></td>
+									<td class="item-note" style="color:red;">*{:L('SMS verification message template note')}</td>
+								</tr>
+
+								<tr class="controls">
+									<td class="item-label">{:L('Promotional text for introduction page')} :</td>
+									<td><input type="text" class="form-control input-10x" name="tgtext"
+											value="{$data['tgtext']}"></td>
+									<td class="item-note" style="color:red;">*{:L('Promotional text note')}</td>
+								</tr>
+
+								<tr class="controls">
+									<td class="item-label">{:L('Official support email')} :</td>
+									<td><input type="text" class="form-control input-10x" name="gfemail"
+											value="{$data['gfemail']}"></td>
+									<td class="item-note" style="color:red;">*{:L('Official support email note')}</td>
+								</tr>
+
+								<tr class="controls">
+									<td class="item-label">{:L('Footer text for PC')} :</td>
+									<td><input type="text" class="form-control input-10x" name="footertext"
+											value="{$data['footertext']}"></td>
+									<td class="item-note" style="color:red;">*{:L('Footer text for PC note')}</td>
+								</tr>
+
+								<tr class="controls">
+									<td class="item-label">{:L('Telegram support')} :</td>
+									<td><input type="text" class="form-control input-10x" name="telegram"
+											value="{$data['telegram']}"></td>
+									<td class="item-note" style="color:red;">*{:L('Telegram support note')}</td>
+								</tr>
+
+								<tr class="controls">
+									<td class="item-label">{:L('Trial money for registration')} :</td>
+									<td><input type="text" class="form-control input-10x" name="tymoney"
+											value="{$data['tymoney']}"></td>
+									<td class="item-note" style="color:red;">*{:L('Trial money for registration note')}</td>
+								</tr>
+
+								<tr class="controls">
+									<td class="item-label">{:L('Website registration function')} :</td>
+									<td>
+										<select name="regswitch" class="form-control input-10x">
+											<option value="1" <eq name="data['regswitch']" value="1">selected</eq>>{:L('Open')}</option>
+											<option value="2" <eq name="data['regswitch']" value="2">selected</eq>>{:L('Close')}</option>
+										</select>
+									</td>
+									<td class="item-note" style="color:red;">*{:L('Disable registration note')}</td>
+								</tr>
+
+								<tr class="controls">
+									<td class="item-label">{:L('General withdrawal function')} :</td>
+									<td>
+										<select name="tbswitch" class="form-control input-10x">
+											<option value="1" <eq name="data['tbswitch']" value="1">selected</eq>>{:L('Open')}</option>
+											<option value="2" <eq name="data['tbswitch']" value="2">selected</eq>>{:L('Prohibited')}</option>
+										</select>
+									</td>
+									<td class="item-note" style="color:red;">*{:L('Disable withdrawal note')}</td>
+								</tr>
+
+								<tr class="controls">
+									<td class="item-label">{:L('Provide trial miner for registration')} :</td>
+									<td>
+										<select name="regjl" class="form-control input-10x">
+											<option value="1" <eq name="data['regjl']" value="1">selected</eq>>{:L('Yes')}</option>
+											<option value="2" <eq name="data['regjl']" value="2">selected</eq>>{:L('No')}</option>
+										</select>
+									</td>
+									<td class="item-note" style="color:red;">*{:L('Disable trial miner note')}</td>
+								</tr>
+
+								<tr class="controls">
+									<td class="item-label">{:L('Check-in rewards configuration')} :</td>
+									<td><input type="text" class="form-control input-10x" name="checkin_rewards"
+											value="{$data['checkin_rewards']}"></td>
+									<td class="item-note" style="color:red;">*{:L('Delimiter note')}</td>
+								</tr>
+
+								<tr class="controls">
+									<td class="item-label">{:L('Check-in notification')}:</td>
+									<td>
+										<select name="checkin_notify_status" class="form-control input-10x">
+											<option value="1" <eq name="data['checkin_notify_status']" value="1">selected</eq>>{:L('Open')}</option>
+											<option value="2" <eq name="data['checkin_notify_status']" value="2">selected</eq>>{:L('Close')}</option>
+										</select>
+									</td>
+									<td class="item-note" style="color:red;">*{:L('Disable check-in notification note')}</td>
+								</tr>
+
+								<tr class="controls" style="margin-top:30px;">
+									<td class="item-label">{:L('Notification content')} :</td>
+									<td>
+										<textarea name="checkin_notify"
+											class="form-control input-10x">{$data.checkin_notify}</textarea>
+									</td>
+									<td class="item-note">{:L('Notification display on homepage')}</td>
+								</tr>
+
+								<tr class="controls">
+									<td class="item-label"></td>
+									<td>
+										<div class="form-item cf">
+											<button class="btn submit-btn ajax-post" target-form="form-horizontal"
+												id="submit" type="submit">{:L('Save')}</button>
+											<a class="btn btn-return" href="{$Think.server.HTTP_REFERER}">{:L('Go back')}</a>
+										</div>
+									</td>
+								</tr>
+							</table>
+						</div>
+					</div>
+				</form>
+
+				<script type="text/javascript">
+					// Gửi form
+					$('#submit').click(function () {
+						$('#form').submit();
+					});
+				</script>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script type="text/javascript" src="__PUBLIC__/kindeditor/kindeditor-min.js"></script>
+<script type="text/javascript">
+	var editor;
+	KindEditor.ready(function (K) {
+		editor = K.create('textarea[name="checkin_notify"]', {
+			width: '800px',
+			height: '300px',
+			allowPreviewEmoticons: false,
+			allowImageUpload: true,
+			uploadJson: "{:U('Config/uploadImage')}",
+			items: [
+				'source', 'fontname', 'fontsize', '|', 'forecolor', 'hilitecolor', 'bold', 'italic', 'underline',
+				'removeformat', '|', 'justifyleft', 'justifycenter', 'justifyright', 'insertorderedlist',
+				'insertunorderedlist', '|', 'emoticons', 'image', 'link', 'fullscreen'],
+			afterBlur: function () {
+				this.sync();
+			}
+		});
+	});
+</script>
+
+<script type="text/javascript">
+	$(function () {
+		// Đánh dấu điều hướng chính
+		$('.config-box').addClass('current');
+		//边导航高亮
+		$('.config-contact').addClass('current');
+	});
+</script>
+
+<include file="Public:footer" />

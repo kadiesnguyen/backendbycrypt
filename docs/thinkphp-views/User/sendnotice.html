@@ -1,0 +1,124 @@
+<include file="Public:header"/>
+<script type="text/javascript" src="__PUBLIC__/layer/laydate/laydate.js"></script>
+<div id="main-content">
+	<div id="top-alert" class="fixed alert alert-error" style="display: none;">
+		<button class="close fixed" style="margin-top: 4px;">×</button>
+		<div class="alert-content">{:L('Alert content')}</div>
+	</div>
+	<div id="main" class="main">
+		<div class="main-title-h">
+			<span class="h1-title"><a href="{:U('User/index')}">{:L('Member management')}</a> >></span>
+			<if condition="$type eq 1">
+			<span class="h1-title">{:L('Send notification to member')}</span>
+			<elseif condition="$type eq 2" />
+			<span class="h1-title">{:L('Send notification to all')}</span>
+			</if>
+		</div>
+		<div class="tab-wrap">
+			<div class="tab-content">
+				<form id="form" action="{:U('User/upsendnotice')}" method="post" class="form-horizontal">
+					<div id="tab" class="tab-pane in tab">
+						<div class="form-item cf">
+							<table>
+
+								<tr class="controls">
+									<td class="item-label">{:L('Notification title')}:</td>
+									<td><input type="text" class="form-control input-10x" name="title" value="">
+									</td>
+									<td class="item-note" style="color:red;">{:L('Notification title note')}</td>
+								</tr>
+								
+								<tr class="controls">
+									<td class="item-label">{:L('Notification content')}:</td>
+									<td>
+									    <textarea type="text" class="form-control input-10x" name="content" value=""></textarea>
+									</td>
+									<td class="item-note" style="color:red;">{:L('Notification content note')}</td>
+								</tr>
+								
+								<tr class="controls">
+									<td class="item-label">{:L('Thumbnail')}:</td>
+									<td>
+										<div id="addpicContainer">
+											<notempty name="data.imgs">
+												<!--Nếu không có hình ảnh, hiển thị hình ảnh mặc định-->
+												<img id="up_img" onclick="getElementById('inputfile').click()" style="cursor:pointer;max-width:100px;" title="{:L('Click to add image')}" alt="{:L('Click to add image')}" src="/Upload/article/{$data.imgs}">
+												<else/>
+												<!--Nếu không có hình ảnh, hiển thị hình ảnh mặc định-->
+												<img id="up_img" onclick="getElementById('inputfile').click()" style="cursor:pointer;max-width:100px;" title="{:L('Click to add image')}" alt="{:L('Click to add image')}" src="__PUBLIC__/Admin/images/addimg.png">
+											</notempty>
+											<input type="hidden" id="imgs" name="imgs" value="{$data.imgs}">
+											<input type="file" id="inputfile" style="height:0;width:0;z-index: -1; position: absolute;left: 10px;top: 5px;" value="/Upload/wenzhang/{$data.img}"/>
+										</div>
+									</td>
+									<td class="item-note"></td>
+								</tr>
+								
+								<input type="hidden" name="type" value="{$type}" />
+                                <input type="hidden" name="id" value="{$id}" />
+								<tr class="controls">
+									<td class="item-label"></td>
+									<td>
+										<div class="form-item cf">
+											<button class="btn submit-btn ajax-post" id="submit" type="submit" target-form="form-horizontal">{:L('Save')}</button>
+											<a class="btn btn-return" href="{$Think.server.HTTP_REFERER}">{:L('Go back')}</a>
+											<notempty name="data.id"><input type="hidden" name="id" value="{$data.id}"/>
+											</notempty>
+										</div>
+									</td>
+								</tr>
+							</table>
+						</div>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+<script type="text/javascript">
+    /** Số điện thoại端网站logo上传 **/
+	$(document).ready(function () {
+		//响应文件添加成功事件
+		$("#inputfile").change(function () {
+			//创建FormData对象
+			var data = new FormData();
+			//为FormData对象添加数据
+			$.each($('#inputfile')[0].files, function (i, file) {
+				data.append('upload_file' + i, file);
+			});
+			//发送数据
+			$.ajax({
+				url: '/Admin/Article/wenzhangimg',
+				type: 'POST',
+				data: data,
+				cache: false,
+				contentType: false,		//不可缺参数
+				processData: false,		//不可缺参数
+				success: function (data) {
+					if (data) {
+						$('#up_img').attr("src", '/Upload/article/' + $.trim(data));
+						$('#imgs').val($.trim(data));
+						$('#up_img').show();
+					}
+				},
+				error: function () {
+					alert('{:L('Upload error')}');
+					$(".loading").hide();	//加载失败移除加载Hình ảnh
+				}
+			});
+		});
+	});
+</script>
+<script type="text/javascript">
+	// Gửi form
+	$('#submit').click(function () {
+		$('#form').submit();
+	});
+</script>
+<include file="Public:footer"/>
+<block name="script">
+	<script type="text/javascript" charset="utf-8">
+		// Đánh dấu điều hướng
+		highlight_subnav("{:U('User/index')}");
+	</script>
+</block>

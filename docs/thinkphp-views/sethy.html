@@ -1,0 +1,203 @@
+<include file="Public:header"/>
+<div id="main-content">
+    <div id="top-alert" class="fixed alert alert-error" style="display: none;">
+		<button class="close fixed" style="margin-top: 4px;">×</button>
+		<div class="alert-content">{:L('Alert content')}</div>
+	</div>
+	<div id="main" class="main">
+		<div class="main-title-h">
+			<span class="h1-title">{:L('Margin contract settings')}</span>
+		</div>
+		<div class="tab-wrap">
+			<div class="tab-content">
+				<form id="form" action="{:U('Trade/sethy')}" method="post" class="form-horizontal">
+					<div id="tab" class="tab-pane in tab">
+						<div class="form-item cf">
+							<table>
+                                <tr class="controls">
+									<td class="item-label" style="width:200px;">{:L('Transaction fee')} :</td>
+									<td style="width:300px;">
+									    <p><input type="text" class="form-control input-10x" name="hy_sxf" value="{$info['hy_sxf']}"></p>
+									    <p style="color:red;">{:L('Transaction fee note')} :</p>
+									</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label" style="width:200px;">{:L('Contract closing time')} :</td>
+									<td style="width:300px;">
+									    <p><input type="text" class="form-control input-10x" name="hy_time" value="{$info['hy_time']}"></p>
+									    <p style="color:red;">{:L('Contract closing time note')}</p>
+									</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label" style="width:200px;">{:L('Contract profit loss ratio')} :</td>
+									<td style="width:300px;">
+									    <p><input type="text" class="form-control input-10x" name="hy_ykbl" value="{$info['hy_ykbl']}"></p>
+									    <p style="color:red;">{:L('Contract profit loss ratio note')}</p>
+									</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label" style="width:200px;">{:L('Minimum investment amount')} :</td>
+									<td style="width:300px;">
+									    <p><input type="text" class="form-control input-10x" name="hy_min" value="{$info['hy_min']}"></p>
+									    <p style="color:red;">{:L('Minimum investment note')}</p>
+									</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label" style="width:200px;">{:L('Investment amount')} :</td>
+									<td style="width:300px;">
+									    <p><input type="text" class="form-control input-10x" name="hy_tzed" value="{$info['hy_tzed']}"></p>
+									    <p style="color:red;">{:L('Investment amount note')}</p>
+									</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label" style="width:200px;">{:L('Minimum bet based on pattern')} :</td>
+									<td style="width:300px;">
+									    <p><input type="text" class="form-control input-10x" name="hy_min_per_frame" value="{$info['hy_min_per_frame']}"></p>
+									    <p style="color:red;">{:L('Minimum bet based on pattern note')}</p>
+									</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label" style="width:200px;">{:L('Maximum bet based on pattern')} :</td>
+									<td style="width:300px;">
+									    <p><input type="text" class="form-control input-10x" name="hy_max_per_frame" value="{$info['hy_max_per_frame']}"></p>
+									    <p style="color:red;">{:L('Maximum bet based on pattern note')}</p>
+									</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label" style="width:200px;">{:L('Contract market opening time')} :</td>
+									<td style="width:300px;">
+									    <p><input type="text" class="form-control input-10x" name="hy_kstime" value="{$info['hy_kstime']}"></p>
+									    <p style="color:red;">{:L('Market opening time note')}</p>
+									</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label" style="width:200px;">{:L('Designated loss ID')} :</td>
+									<td style="width:300px;">
+									    <p><input type="text" class="form-control input-10x" name="hy_ksid" value="{$info['hy_ksid']}"></p>
+									    <p style="color:red;">{:L('Designated loss ID note')}</p>
+									</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label" style="width:200px;">{:L('Designated profit ID')} :</td>
+									<td style="width:300px;">
+									    <p><input type="text" class="form-control input-10x" name="hy_ylid" value="{$info['hy_ylid']}"></p>
+									    <p style="color:red;">{:L('Designated profit ID note')}</p>
+									</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label" style="width:200px;">{:L('Risk management probability')} :</td>
+									<td style="width:300px;">
+									    <p><input type="text" class="form-control input-10x" name="hy_fkgl" value="{$info['hy_fkgl']}"></p>
+									    <p style="color:red;">{:L('Risk management note')}</p>
+									</td>
+								</tr>
+                                <input type="hidden" name="hy_id" value="{$info['id']}" />
+								<tr class="controls">
+									<td class="item-label"></td>
+									<td>
+										<div class="form-item cf">
+											<button class="btn submit-btn ajax-post" target-form="form-horizontal" id="submit" type="submit">{:L('Save')}</button>
+											<a class="btn btn-return" href="{$Think.server.HTTP_REFERER}">{:L('Return')}</a>
+										</div>
+									</td>
+								</tr>
+							</table>
+						</div>
+					</div>
+				</form>
+				<script type="text/javascript">
+					// Gửi form
+					$('#submit').click(function(){
+						$('#form').submit();
+					});
+				</script>
+			</div>
+		</div>
+	</div>
+</div>
+<script type="text/javascript">
+	function renderQueueRows(list) {
+		if (!list || list.length === 0) {
+			return '<tr><td colspan="3" style="text-align:center;">{:L("No data")}</td></tr>';
+		}
+		var html = '';
+		for (var i = 0; i < list.length; i++) {
+			var row = list[i];
+			var resultColor = row.result === 'WIN' ? '#19b65a' : '#e74c3c';
+			html += '<tr>' +
+				'<td>' + row.round_no + '</td>' +
+				'<td><span style="color:' + resultColor + ';font-weight:600;">' + row.result + '</span></td>' +
+				'<td>' + row.addtime_text + '</td>' +
+				'</tr>';
+		}
+		return html;
+	}
+
+	function buildResultQueueContent(list) {
+		return '' +
+			'<div style="padding:10px 6px;">' +
+				'<p style="font-size:24px;font-weight:700;margin:0 0 10px 0;">{:L("Session result control")}</p>' +
+				'<p style="margin:0 0 8px 0;">{:L("Use this feature to force result for the next session. After that session ends, system can reset this configuration to default.")}</p>' +
+				'<div style="margin-top:12px;display:flex;gap:12px;">' +
+					'<button type="button" class="btn" style="flex:1;background:#19b65a;color:#fff;" onclick="runResultQueueAction(\'next_win\')">{:L("Next session 100% WIN")}</button>' +
+					'<button type="button" class="btn" style="flex:1;background:#e74c3c;color:#fff;" onclick="runResultQueueAction(\'next_loss\')">{:L("Next session 100% LOSS")}</button>' +
+				'</div>' +
+				'<p style="margin:16px 0 8px 0;font-size:20px;font-weight:700;">{:L("Configured session list")}</p>' +
+				'<div class="data-table table-striped" style="margin-bottom:12px;">' +
+					'<table><thead><tr><th>{:L("Round")}</th><th>{:L("Result")}</th><th>{:L("Created at")}</th></tr></thead><tbody>' + renderQueueRows(list) + '</tbody></table>' +
+				'</div>' +
+				'<p style="margin:8px 0 8px 0;font-size:20px;font-weight:700;">{:L("Add manual round")}</p>' +
+				'<p style="margin:0 0 10px 0;">{:L("Example: round 1 lose, round 2 win, round 3 lose... Each click adds one round to the end of queue.")}</p>' +
+				'<div style="display:flex;gap:12px;">' +
+					'<button type="button" class="btn" style="flex:1;background:#e74c3c;color:#fff;" onclick="runResultQueueAction(\'add_loss\')">{:L("Add LOSS round")}</button>' +
+					'<button type="button" class="btn" style="flex:1;background:#19b65a;color:#fff;" onclick="runResultQueueAction(\'add_win\')">{:L("Add WIN round")}</button>' +
+				'</div>' +
+			'</div>';
+	}
+
+	function loadResultQueuePanel() {
+		$.post("{:U('Trade/resultQueuePanel')}", {}, function (res) {
+			if (res.code === 1) {
+				$('#result-queue-panel').html(buildResultQueueContent(res.data));
+			} else {
+				$('#result-queue-panel').html('<div style="padding:20px;color:#e74c3c;">' + res.info + '</div>');
+			}
+		}, 'json');
+	}
+
+	function openResultQueuePanel() {
+		layer.open({
+			type: 1,
+			skin: 'layui-layer-rim',
+			area: ['760px', '760px'],
+			title: false,
+			closeBtn: 1,
+			shadeClose: true,
+			content: '<div id="result-queue-panel" style="padding:8px;">{:L("Loading")}</div>',
+			success: function () {
+				loadResultQueuePanel();
+			}
+		});
+	}
+
+	function runResultQueueAction(action) {
+		layer.load(0, { shade: [0.5, '#8F8F8F'] });
+		$.post("{:U('Trade/resultQueueAction')}", { action: action }, function (res) {
+			layer.closeAll('loading');
+			if (res.code === 1) {
+				layer.msg(res.info, {icon: 1});
+				loadResultQueuePanel();
+			} else {
+				layer.msg(res.info, {icon: 2});
+			}
+		}, 'json');
+	}
+
+	$(function(){
+		// Đánh dấu điều hướng chính
+		$('.config-box').addClass('current');
+		//边导航高亮
+		$('.config-contact').addClass('current');
+	});
+</script>
+<include file="Public:footer"/>

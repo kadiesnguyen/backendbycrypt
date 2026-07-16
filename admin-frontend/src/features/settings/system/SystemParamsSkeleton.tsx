@@ -1,0 +1,1 @@
+export function SystemParamsSkeleton() { return <div className="h-64 animate-pulse rounded-lg border border-border bg-surface" />; }

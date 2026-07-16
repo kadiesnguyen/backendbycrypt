@@ -1,0 +1,101 @@
+<include file="Public:header"/>
+<div id="main-content">
+    <div id="top-alert" class="fixed alert alert-error" style="display: none;">
+        <button class="close fixed" style="margin-top: 4px;">×</button>
+        <div class="alert-content">{:L('Alert content')}</div>
+    </div>
+    <div id="main" class="main">
+        <div class="main-title-h">
+            <span class="h1-title">{:L('Fund exchange history')}</span>
+            <div class="fr">
+                <button class="btn btn-warning" onClick="location.href='{:U('Finance/fund')}'">{:L('Reset search')}</button>
+            </div>
+        </div>
+        <div class="cf">
+            <div class="search-form fr cf" style="float: none !important;">
+                <div class="sleft">
+                    <form name="formSearch" id="formSearch" method="get" name="form1">
+                        <select style="width: 100px; float: left; margin-right: 10px;" name="field" class="form-control">
+                            <option value="username" <eq name="Think.get.field" value="username">selected</eq>>{:L('Username')}</option>
+                        </select>
+                        <input type="text" name="name" class="search-input form-control" value="{$Think.get.name}" placeholder="{:L('Search content')}">
+                        <a class="sch-btn" href="javascript:;" id="search"> <i class="btn-search"></i> </a>
+                    </form>
+                    <script>
+                        $(function () {
+                            $('#search').click(function () {
+                                $('#formSearch').submit();
+                            });
+                        });
+                        $(".search-input").keyup(function (e) {
+                            if (e.keyCode === 13) {
+                                $("#search").click();
+                                return false;
+                            }
+                        });
+                    </script>
+                </div>
+            </div>
+        </div>
+        <div class="data-table table-striped">
+            <table class="">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>{:L('Username')}</th>
+                        <th>{:L('From coin')}</th>
+                        <th>{:L('To coin')}</th>
+                        <th>{:L('Convert rate')}</th>
+                        <th>{:L('Actual receipt')}</th>
+                        <th>{:L('Time')}</th>
+                        <th>{:L('Status')}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <notempty name="list">
+                        <volist name="list" id="vo">
+                            <tr>
+                                <td>{$vo.id}</td>
+                                <td>{$vo.username}</td>
+                                <td>{$vo.from_amount} ({$vo.from_coin|strtoupper})</td>
+                                <td>{$vo.to_amount} ({$vo.to_coin|strtoupper})</td>
+                                <td>
+                                    <?php
+                                        $rates = array();
+                                        if ((float)$vo['from_rate_usdt'] != 1) {
+                                            $rates[] = strtoupper($vo['from_coin']) . ': ' . $vo['from_rate_usdt'];
+                                        }
+                                        if ((float)$vo['to_rate_usdt'] != 1) {
+                                            $rates[] = strtoupper($vo['to_coin']) . ': ' . $vo['to_rate_usdt'];
+                                        }
+                                        echo empty($rates) ? '-' : implode(' | ', $rates);
+                                    ?>
+                                </td>
+                                <td>{$vo.usdt_amount}</td>
+                                <td>{$vo.addtime|addtime}</td>
+                                <td>
+                                    <eq name="vo.status" value="1"><span style="color:green;">{:L('Completed')}</span></eq>
+                                    <eq name="vo.status" value="0"><span style="color:blue;">{:L('Pending')}</span></eq>
+                                    <eq name="vo.status" value="2"><span style="color:red;">{:L('Cancelled')}</span></eq>
+                                </td>
+                            </tr>
+                        </volist>
+                        <else />
+                        <tr>
+                            <td colspan="12" class="text-center empty-info"><i class="glyphicon glyphicon-exclamation-sign"></i>{:L('No data')}</td>
+                        </tr>
+                    </notempty>
+                </tbody>
+            </table>
+            <div class="page">
+                <div>{$page}</div>
+            </div>
+        </div>
+    </div>
+</div>
+<include file="Public:footer"/>
+<block name="script">
+    <script type="text/javascript" charset="utf-8">
+        highlight_subnav("{:U('Finance/fund')}");
+    </script>
+</block>

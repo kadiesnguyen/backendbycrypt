@@ -1,0 +1,119 @@
+<include file="Public:header"/>
+<div id="main-content">
+    <div id="top-alert" class="fixed alert alert-error" style="display: none;">
+        <button class="close fixed" style="margin-top: 4px;">&times;</button>
+        <div class="alert-content">Nội dung cảnh báo</div>
+    </div>
+    <div id="main" class="main">
+        <div class="main-title-h">
+            <span class="h1-title">Quản lý thành viên quản trị</span>
+            <notempty name="name">
+                <span class="h2-title">>><a href="{:U('User/adminUser')}">Danh sách quản trị viên</a></span>
+            </notempty>
+        </div>
+
+        <div class="cf">
+            <div class="fl">
+                <a class="btn btn-success navbar-btn btn-sm" href="{:U('User/adminUserEdit')}">Thêm mới</a>
+                <button class="btn ajax-post btn-info navbar-btn btn-sm"
+                        url="{:U('User/status',array('type'=>'resume','mobile'=>'Admin'))}" target-form="ids">Kích hoạt
+                </button>
+                <button class="btn ajax-post btn-warning navbar-btn btn-sm"
+                        url="{:U('User/status',array('type'=>'forbid','mobile'=>'Admin'))}" target-form="ids">Tạm ngừng
+                </button>
+                <button class="btn ajax-post confirm btn-danger navbar-btn btn-sm" confirm-msg="Việc xóa một lúc nhiều thành viên không thể khôi phục, Xác nhận xóa?"
+                        url="{:U('User/status',array('type'=>'del','mobile'=>'Admin'))}" target-form="ids">Xóa
+                </button>
+            </div>
+
+
+            <div class="search-form fr cf">
+                <div class="sleft">
+                    <form name="formSearch" id="formSearch" method="get" name="form1">
+                        <select style="height: 32px; font-size: 14px; width: 100px; float: left; margin-right: 5px;"
+                                name="field">
+                            <option value="uid"
+                            <option value="username">Tên đăng nhập</option>
+                        </select> <input type="text" name="name" class="search-input" value="{$name}"
+                                         placeholder="Tìm kiếm quản trị viên" style="width: 150px">
+                        <a class="sch-btn" href="javascript:;" id="search">
+                            <i class="btn-search"></i>
+                        </a>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="data-table table-striped">
+            <table class="">
+                <thead>
+                <tr>
+                    <th class="row-selected row-selected"><input class="check-all" type="checkbox"/></th>
+                    <th class="">ID</th>
+                    <th class="">Tên đăng nhập</th>
+                    <th class="">Họ và tên</th>
+                    <th class="">Số điện thoại</th>
+                    <th class="">Email</th>
+                    <th class="">Trạng thái</th>
+                    <th class="">Thao tác</th>
+                </tr>
+                </thead>
+                <tbody>
+                <notempty name="list">
+                    <volist name="list" id="vo">
+                        <tr>
+                            <td><input class="ids" type="checkbox" name="id[]" value="{$vo.id}"/></td>
+                            <td>{$vo.id}</td>
+                            <td>{$vo.username}</td>
+                            <td>{$vo.nickname}</td>
+                            <td>{$vo.mobile}</td>
+                            <td>{$vo.email}</td>
+                            <td>
+                                <eq name="vo.status" value="0">Vô hiệu hóa</eq>
+                                <eq name="vo.status" value="1">Bình thường</eq>
+                            </td>
+                            <td>
+                                <a href="{:U('User/adminUserEdit?id='.$vo['id'])}" class="btn btn-info btn-xs">Chỉnh sửa</a>
+                            </td>
+                        </tr>
+                    </volist>
+                    <else/>
+                    <td colspan="12" class="text-center empty-info"><i class="glyphicon glyphicon-exclamation-sign"></i>Không có dữ liệu</td>
+                </notempty>
+                </tbody>
+            </table>
+            <div class="page">
+                <div>{$page}</div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    function del_adminuser() {
+        var aaa = confirm("Xác nhận xóa dữ liệu?");
+        alert(aaa);
+        return false;
+
+    }
+    //Chức năng tìm kiếm
+    $(function () {
+        $('#search').click(function () {
+            $('#formSearch').submit();
+        });
+    });
+    // Nhập để tìm kiếm
+    $(".search-input").keyup(function (e) {
+        if (e.keyCode === 13) {
+            $("#search").click();
+            return false;
+        }
+    });
+</script>
+<script type="text/javascript">
+    $(function () {
+        // Đánh dấu điều hướng chính
+        $('.user-box').addClass('current');
+        //边导航高亮
+        $('.user-index').addClass('current');
+    });
+</script>
+<include file="Public:footer"/>

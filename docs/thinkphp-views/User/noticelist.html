@@ -1,0 +1,93 @@
+<include file="Public:header"/>
+<div id="main-content">
+	<div id="top-alert" class="fixed alert alert-error" style="display: none;">
+		<button class="close fixed" style="margin-top: 4px;">×</button>
+		<div class="alert-content">{:L('Alert content')}</div>
+	</div>
+	<div id="main" class="main">
+		<div class="main-title-h">
+			<span class="h1-title">{:L('Notification history')}</span>
+			<div class="fr">
+				<button class="btn btn-warning" onClick="location.href='{:U('User/noticelist')}'">{:L('Reset search')}</button>
+			</div>
+		</div>
+		<div>
+			<div class="cf">
+				<div class="fl">
+					<button class="btn ajax-post confirm btn-danger" url="{:U('User/noticedel',array('type'=>'1'))}" target-form="ids">{:L('Delete')}</button>
+				</div>
+				<div class="search-form fr cf" style="float: none !important;">
+					<div class="sleft">
+						<form name="formSearch" id="formSearch" method="get" name="form1">
+							<input type="text" name="username" class="search-input form-control" value="{$Think.get.username}" placeholder="{:L('Search content')}" style="">
+							<a class="sch-btn" href="javascript:;" id="search"> <i class="btn-search"></i> </a>
+						</form>
+						<script>
+							//Chức năng tìm kiếm
+							$(function () {
+								$('#search').click(function () {
+									$('#formSearch').submit();
+								});
+							});
+							// Nhập để tìm kiếm
+							$(".search-input").keyup(function (e) {
+								if (e.keyCode === 13) {
+									$("#search").click();
+									return false;
+								}
+							});
+						</script>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="data-table table-striped">
+			<table class="">
+				<thead>
+				<tr>
+					<th class="row-selected row-selected"><input class="check-all" type="checkbox"/></th>
+					<th class="">ID</th>
+					<th class="">{:L('Member account')}</th>
+					<th class="">{:L('Notification title')}</th>
+					<th class="">{:L('Notification content')}</th>
+					<th class="">{:L('Send time')}</th>
+					<th class="">{:L('Status')}</th>
+				</tr>
+				</thead>
+				<tbody>
+				<notempty name="list">
+					<volist name="list" id="vo">
+						<tr>
+							<td><input class="ids" type="checkbox" name="id[]" value="{$vo.id}"/></td>
+							<td>{$vo.id}</td>
+							<td>{$vo.account}</td>
+							<td>{$vo.title}</td>
+							<td>{$vo.content}</td>
+							<td>{$vo.addtime}</td>
+							<td>
+								<if condition="$vo.status eq 1">
+									<span style="color:red;">{:L('Unread')}</span>
+								<elseif condition="$vo.status eq 2" />
+									<span style="color:green;">{:L('Read')}</span>
+								</if>
+							</td>
+						</tr>
+					</volist>
+					<else/>
+					<td colspan="12" class="text-center empty-info"><i class="glyphicon glyphicon-exclamation-sign"></i>{:L('No data')}</td>
+				</notempty>
+				</tbody>
+			</table>
+			<div class="page">
+				<div>{$page}</div>
+			</div>
+		</div>
+	</div>
+</div>
+<include file="Public:footer"/>
+<block name="script">
+	<script type="text/javascript" charset="utf-8">
+		// Đánh dấu điều hướng
+		highlight_subnav("{:U('User/noticelist')}");
+	</script>
+</block>

@@ -1,0 +1,137 @@
+<include file="Public:header"/>
+<div id="main-content">
+	<div id="top-alert" class="fixed alert alert-error" style="display: none;">
+		<button class="close fixed" style="margin-top: 4px;">×</button>
+		<div class="alert-content">{:L('Alert content')}</div>
+	</div>
+	<div id="main" class="main">
+		<div class="main-title-h">
+			<span class="h1-title">{:L('Coin market price order')}</span>
+			<a class="btn btn-warning" onClick="location.href='{:U('Trade/bbsjlist')}'">{:L('Reset search')}</a>
+		</div>
+		<div class="cf">
+			<div class="search-form fr cf" style="43px;float: none !important;">
+				<div class="sleft">
+					<form name="formSearch" id="formSearch" method="get" name="form1">
+						<select style="width: 120px; float: left; margin-right: 10px;" name="type" class="form-control">
+							<option value="" <empty name="Think.get.type">selected</empty>>{:L('All types')}</option>
+							<option value="1" <eq name="Think.get.type" value="1">selected</eq>>{:L('Buy')}</option>
+							<option value="2" <eq name="Think.get.type" value="2">selected</eq>>{:L('Sell')}</option>
+						</select>
+						<select style="width: 120px; float: left; margin-right: 10px;" name="status" class="form-control">
+							<option value="" <empty name="Think.get.status">selected</empty>>{:L('Transaction status')}</option>
+							<option value="1" <eq name="Think.get.status" value="1">selected</eq>>{:L('Placing order')}</option>
+							<option value="2" <eq name="Think.get.status" value="2">selected</eq>>{:L('Completed')}</option>
+						</select>
+						<input type="text" name="username" class="search-input form-control" value="" placeholder="{:L('Enter username')}" />
+						<a class="sch-btn" href="javascript:;" id="search"> <i class="btn-search"></i> </a>
+					</form>
+					<script>
+						//Chức năng tìm kiếm
+						$(function () {
+							$('#search').click(function () {
+								$('#formSearch').submit();
+							});
+						});
+						// Nhập để tìm kiếm
+						$(".search-input").keyup(function (e) {
+							if (e.keyCode === 13) {
+								$("#search").click();
+								return false;
+							}
+						});
+					</script>
+				</div>
+			</div>
+		</div>
+		<div class="data-table table-striped">
+			<table class="">
+				<thead>
+					<tr>
+						<th class="">ID</th>
+						<th class="">{:L('Member account')}</th>
+						<th class="">{:L('Trading pair')}</th>
+						<th class="">{:L('Type')}</th>
+						<th class="">{:L('Status')}</th>
+						<th class="">{:L('Transaction amount')}</th>
+						<th class="">{:L('USDT amount')}</th>
+						<th class="">{:L('Trading price')}</th>
+						<th class="">{:L('Order time')}</th>
+						<th class="">{:L('Trading time')}</th>
+						<th class="">{:L('Transaction fee ratio')}</th>
+						<th class="">{:L('Transaction fee')}</th>
+					</tr>
+				</thead>
+				<tbody>
+					<notempty name="list">
+						<volist name="list" id="vo">
+							<tr>
+								<td>{$vo.id}</td>
+								<td>{$vo.account}</td>
+								<td>{$vo.symbol}</td>
+								<td>
+									<if condition="$vo.type eq 1">
+										<span style="color:#0ecb81;">{:L('Buy')}</span>
+									<elseif condition="$vo.type eq 2" />
+										<span style="color:#f5465c;">{:L('Sell')}</span>
+									</if>
+								</td>
+								<td>
+									<if condition="$vo.status eq 1">
+										<span style="color:#707A8A;">{:L('Placing order')}</span>
+									<elseif condition="$vo.status eq 2" />
+										<span style="color:#0ecb81;">{:L('Traded')}</span>
+									</if>
+								</td>
+								<td>{$vo.coinnum}</td>
+								<td>{$vo.usdtnum}</td>
+								<td>{$vo.price}</td>
+								<td>{$vo.addtime}</td>
+								<td>{$vo.tradetime}</td>
+								<td>
+									<?php echo ($vo['sxfbl'] / 100);?>%
+								</td>
+								<td>{$vo.fee}</td>
+							</tr>
+						</volist>
+						<else />
+						<td colspan="12" class="text-center empty-info">
+							<i class="glyphicon glyphicon-exclamation-sign"></i>{:L('No data')}
+						</td>
+					</notempty>
+				</tbody>
+			</table>
+			<div class="page">
+				<div>{$page}</div>
+			</div>
+		</div>
+	</div>
+</div>
+<script type="text/javascript">
+	function setwinloss(id) {
+		var id = id;
+		var kongyk = $("#kongyk").val();
+		$.post("{:U('Trade/setwinloss')}",
+			{ 'id': id, 'kongyk': kongyk },
+			function (data) {
+				if (data.code == 1) {
+					alert(data.info);
+					setTimeout(function () {
+						window.location.reload();
+					}, 2000);
+				} else {
+					alert(data.info);
+					setTimeout(function () {
+						window.location.reload();
+					}, 2000);
+				}
+			});
+	}
+</script>
+<include file="Public:footer"/>
+<block name="script">
+	<script type="text/javascript" charset="utf-8">
+		// Đánh dấu điều hướng
+		highlight_subnav("{:U('Trade/bbsjlist')}");
+	</script>
+</block>

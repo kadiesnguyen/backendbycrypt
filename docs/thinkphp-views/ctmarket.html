@@ -1,0 +1,79 @@
+<include file="Public:header"/>
+<div id="main-content">
+    <div id="top-alert" class="fixed alert alert-error" style="display: none;">
+        <button class="close fixed" style="margin-top: 4px;">×</button>
+        <div class="alert-content">{:L('Alert content')}</div>
+    </div>
+    <div id="main" class="main">
+        <div class="main-title-h">
+            <span class="h1-title">{:L('Market configuration')}</span>
+        </div>
+
+        <div class="cf">
+            <div class="fl">
+                <a class="btn btn-success" href="{:U('Config/ctmarketEdit')}">{:L('Add new')}</a>
+                <button class="btn ajax-post btn-info" url="{:U('Config/ctmarketoStatus',array('type'=>'resume'))}" target-form="ids">{:L('Activate')}</button>
+                <button class="btn ajax-post btn-warning" url="{:U('Config/ctmarketoStatus',array('type'=>'forbid'))}" target-form="ids">{:L('Suspend')}</button>
+                <button class="btn ajax-post confirm btn-danger" url="{:U('Config/ctmarketoStatus',array('type'=>'del'))}" target-form="ids">{:L('Delete')}</button>
+            </div>
+        </div>
+        <div class="data-table table-striped">
+            <table class="">
+                <thead>
+					<tr>
+						<th class="row-selected row-selected"><input class="check-all" type="checkbox"/></th>
+						<th class="">ID</th>
+						<th class="">{:L('Market trading pair')}</th>
+						<th class="">{:L('Sort')}</th>
+						<th class="">{:L('Display status')}</th>
+						<th class="">{:L('Trading status')}</th>
+						<th class="" style="text-align: center;">{:L('Action')}</th>
+					</tr>
+                </thead>
+                <tbody>
+                <notempty name="list">
+                    <volist name="list" id="vo">
+                        <tr>
+                            <td><input class="ids" type="checkbox" name="id[]" value="{$vo.id}"/></td>
+                            <td>{$vo.id}</td>
+                            <td>{$vo.title}</td>
+                            <td>{$vo.sort}</td>
+                            <td>
+                                <eq name="vo.status" value="1">
+                                    <b style="color: #028E16;">{:L('Available')}</b>
+                                <else/>
+                                    <b style="color: #F70408">{:L('Disabled')}</b>
+                                </eq>
+                            </td>
+                            
+                            <td>
+                                <eq name="vo.state" value="1">
+                                    <b style="color: #028E16;">{:L('Normal')}</b>
+                                <else/>
+                                    <b style="color: #F70408">{:L('Prohibited')}</b>
+                                </eq>
+                            </td>
+
+                            <td style="text-align: center;">
+								<a href="{:U('Config/ctmarketEdit?id='.$vo['id'])}" class="btn btn-primary btn-xs">{:L('Edit')}</a>
+                            </td>
+                        </tr>
+                    </volist>
+                    <else/>
+                    <td colspan="12" class="text-center empty-info"><i class="glyphicon glyphicon-exclamation-sign"></i>{:L('No data')}</td>
+                </notempty>
+                </tbody>
+            </table>
+            <div class="page">
+                <div>{$page}</div>
+            </div>
+        </div>
+    </div>
+</div>
+<include file="Public:footer"/>
+<block name="script">
+    <script type="text/javascript" charset="utf-8">
+        // Đánh dấu điều hướng
+        highlight_subnav("{:U('Config/ctmarket')}");
+    </script>
+</block>

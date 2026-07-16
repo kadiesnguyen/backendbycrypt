@@ -1,0 +1,98 @@
+<include file="Public:header" />
+<div id="main-content">
+	<div id="top-alert" class="fixed alert alert-error" style="display: none;">
+		<button class="close fixed" style="margin-top: 4px;">×</button>
+		<div class="alert-content">{:L('Alert content')}</div>
+	</div>
+	<div id="main" class="main">
+		<div class="main-title-h"> <span class="h1-title">{:L('Purchase history')}</span> </div>
+		<div class="cf">
+			<div class="search-form fl cf">
+				<div class="sleft">
+					<form name="formSearch" id="formSearch" method="get" name="form1">
+						<select style="width:160px;float:left;margin-right:10px;" name="field" class="form-control">
+							<option value="username" <eq name="Think.get.field" value="username">selected</eq>>{:L('Username')}</option>
+						</select>
+						<input type="text" name="name" class="search-input form-control" value="{$Think.get.name}" placeholder="{:L('Enter search content')}" style="">
+						<a class="sch-btn" href="javascript:;" id="search"> <i class="btn-search"></i> </a>
+					</form>
+					<script>
+						//Chức năng tìm kiếm
+						$(function(){
+							$('#search').click(function(){
+								$('#formSearch').submit();
+							});
+						});
+						// Nhập để tìm kiếm
+						$(".search-input").keyup(function(e){
+							if(e.keyCode===13){
+								$("#search").click();
+								return false;
+							}
+						});
+					</script> 
+				</div>
+			</div>
+		</div>
+   
+		<div class="data-table table-striped">
+			<table class="">
+				<thead>
+					<tr>
+						<th class="row-selected row-selected"><input class="check-all" type="checkbox" /></th>
+						<th class="">ID</th>
+						<th class="">{:L('Member account')}</th>
+						<th class="">{:L('Project name')}</th>
+						<th class="">{:L('Purchase')}</th>
+						<th class="">{:L('Payment')}</th>
+						<th class="">{:L('Time')}</th>
+						<th class="">{:L('Status')}</th>
+					</tr>
+				</thead>
+				<tbody>
+					<notempty name="list">
+						<volist name="list" id="vo">
+							<tr>
+								<td><input class="ids" type="checkbox" name="id[]" value="{$vo.id}" /></td>
+								<td>{$vo.id}</td>
+								<td>{$vo.account}</td>
+								<td>{$vo.name}</td>
+								<td>
+									<span>{:L('Purchase currency')}：<?php echo strtoupper($vo['coinname']);?></span><br />
+									<span>{:L('Purchase amount')}: {$vo.num}</span>
+								</td>
+								<td>
+									<span>{:L('Payment currency')}：<?php echo strtoupper($vo['buycoin']);?></span><br />
+									<span>{:L('Purchase amount')}: {$vo.mum}</span>
+								</td>
+								<td>
+									<span>{:L('Purchase date')}: {$vo.addtime}</span><br />
+									<span>{:L('Unfreeze date')}: {$vo.endtime}</span>
+								</td>
+								<td>
+									<eq name="vo.status" value="1">
+										<span style="color:red;">{:L('Freezing')}</span>
+									<else />
+										<span style="color:green;">{:L('Unfrozen')}</span>
+									</eq>
+								</td>
+							</tr>
+						</volist>
+					<else />
+						<td colspan="15" class="text-center empty-info"><i class="glyphicon glyphicon-exclamation-sign"></i>{:L('No data')}</td>
+					</notempty>
+				</tbody>
+			</table>
+			<div class="page">
+				<div>{$page}</div>
+			</div>
+		</div>
+	</div>
+</div>
+<include file="Public:footer" />
+<block name="script"> 
+	<script type="text/javascript" charset="utf-8">
+		// Đánh dấu điều hướng
+		highlight_subnav("{:U('Issue/log')}");
+	</script> 
+</block>

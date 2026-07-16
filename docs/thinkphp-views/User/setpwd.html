@@ -1,0 +1,66 @@
+<include file="Public:header" />
+<div id="main-content">
+	<div id="top-alert" class="fixed alert alert-error" style="display: none;">
+		<button class="close fixed" style="margin-top: 4px;">&times;</button>
+		<div class="alert-content">Nội dung cảnh báo</div>
+	</div>
+	<div id="main" class="main">
+		<div class="main-title-h">
+			<span class="h1-title">Đổi mật khẩu</span>
+		</div>
+
+		<div class="tab-wrap">
+
+			<div class="tab-content">
+				<form id="form" action="{:U('User/setpwd')}" method="post" class="form-horizontal">
+					<div id="tab" class="tab-pane in tab">
+						<div class="form-item cf">
+							<table>
+								<tr class="controls">
+									<td class="item-label">Mật khẩu cũ :</td>
+									<td><input type="password" class="form-control" name="oldpassword" value=""></td>
+									<td class="item-note"></td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">Mật khẩu mới :</td>
+									<td><input type="password" class="form-control" name="newpassword" value=""></td>
+									<td class="item-note"></td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">Xác nhận mật khẩu :</td>
+									<td><input type="password" class="form-control" name="repassword" value=""></td>
+									<td class="item-note"></td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label"></td>
+									<td>
+										<div class="form-item cf">
+											<button class= "btn submit-btn ajax-post" id="submit" type="submit" target-form="form-horizontal">Xác nhận</button>
+											<a class="btn btn-return" href="{$Think.server.HTTP_REFERER}">Trở lại</a>
+											<notempty name="data.id"> <input type="hidden" name="id" value="{$data.id}" /> </notempty>
+										</div>
+									</td>
+								</tr>
+							</table>
+						</div>
+					</div>
+				</form>
+				<script type="text/javascript">
+					// Gửi form
+					$('#submit').click(function() {
+						$('#form').submit();
+					});
+				</script>
+			</div>
+		</div>
+	</div>
+</div>
+<script type="text/javascript">
+	$(function() {
+		// Đánh dấu điều hướng chính
+		$('.index-box').addClass('current');
+		//边导航高亮
+		$('.index-index').addClass('current');
+	});
+</script>
+<include file="Public:footer" />

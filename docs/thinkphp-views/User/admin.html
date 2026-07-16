@@ -1,0 +1,104 @@
+<include file="Public:header"/>
+<div id="main-content">
+	<div id="top-alert" class="fixed alert alert-error" style="display: none;">
+		<button class="close fixed" style="margin-top: 4px;">×</button>
+		<div class="alert-content">{:L('Alert content')}</div>
+	</div>
+	<div id="main" class="main">
+		<div class="main-title-h">
+			<span class="h1-title">{:L('Admin management')}</span>
+			<notempty name="name">
+				<span class="h2-title">>><a href="{:U('User/adminUser')}">{:L('Admin list')}</a></span>
+			</notempty>
+		</div>
+		<div class="cf">
+			<div class="fl">
+				<a class="btn btn-success" href="{:U('User/adminEdit')}">{:L('Add new')}</a>
+				<button class="btn ajax-post btn-info" url="{:U('User/adminStatus',array('type'=>'resume','mobile'=>'Admin'))}" target-form="ids">{:L('Activate')}</button>
+				<button class="btn ajax-post btn-warning" url="{:U('User/adminStatus',array('type'=>'forbid','mobile'=>'Admin'))}" target-form="ids">{:L('Suspend')}</button>
+				<button class="btn ajax-post confirm btn-danger" confirm-msg="{:L('Confirm delete multiple members')}?" url="{:U('User/adminStatus',array('type'=>'del','mobile'=>'Admin'))}" target-form="ids">{:L('Delete')}</button>
+			</div>
+			<div class="search-form fr cf">
+				<div class="sleft">
+					<form name="formSearch" id="formSearch" method="get" name="form1">
+						<select name="status" class="form-control" style="width:160px;float:left;margin-right:10px;">
+							<option value="" <empty name="Think.get.status">selected</empty>>{:L('All statuses')}</option>
+							<option value="1" <eq name="Think.get.status" value="1">selected</eq>>{:L('Frozen status')}</option>
+							<option value="2" <eq name="Think.get.status" value="2">selected</eq>>{:L('Normal status')}</option>
+						</select>
+						<select name="field" class="form-control" style="width:160px;float:left;margin-right:10px;">
+							<option value="username" <empty name="Think.get.field">selected</empty>>{:L('Username')}</option>
+							<option value="moble" <eq name="Think.get.field" value="moble">selected</eq>>{:L('Mobile phone')}</option>
+						</select>
+						<input type="text" name="name" class="search-input form-control" value="{$Think.get.name}" placeholder="{:L('Search content')}" style="">
+						<a class="sch-btn" href="javascript:;" id="search"> <i class="btn-search"></i> </a>
+					</form>
+					<script>
+						//Chức năng tìm kiếm
+						$(function () {
+							$('#search').click(function () {
+								$('#formSearch').submit();
+							});
+						});
+						// Nhập để tìm kiếm
+						$(".search-input").keyup(function (e) {
+							if (e.keyCode === 13) {
+								$("#search").click();
+								return false;
+							}
+						});
+					</script>
+				</div>
+			</div>
+		</div>
+		<div class="data-table table-striped">
+			<table class="">
+				<thead>
+				<tr>
+					<th class="row-selected row-selected"><input class="check-all" type="checkbox"/></th>
+					<th class="">ID</th>
+					<th class="">{:L('Username')}</th>
+					<th class="">{:L('Nickname')}</th>
+					<th class="">{:L('Mobile phone')}</th>
+					<th class="">{:L('Email')}</th>
+					<th class="">{:L('Status')}</th>
+					<th class="">{:L('Action')}</th>
+				</tr>
+				</thead>
+				<tbody>
+				<notempty name="list">
+					<volist name="list" id="vo">
+						<tr>
+							<td><input class="ids" type="checkbox" name="id[]" value="{$vo.id}"/></td>
+							<td>{$vo.id}</td>
+							<td>{$vo.username}</td>
+							<td>{$vo.nickname}</td>
+							<td>{$vo.moble}</td>
+							<td>{$vo.email}</td>
+							<td>
+								<eq name="vo.status" value="0">{:L('Disabled')}</eq>
+								<eq name="vo.status" value="1">{:L('Normal')}</eq>
+							</td>
+							<td>
+								<a href="{:U('User/adminEdit?id='.$vo['id'])}" class="btn btn-primary btn-xs">{:L('Edit')}</a>
+							</td>
+						</tr>
+					</volist>
+					<else/>
+					<td colspan="12" class="text-center empty-info"><i class="glyphicon glyphicon-exclamation-sign"></i>{:L('No data')}</td>
+				</notempty>
+				</tbody>
+			</table>
+			<div class="page">
+				<div>{$page}</div>
+			</div>
+		</div>
+	</div>
+</div>
+<include file="Public:footer"/>
+<block name="script">
+	<script type="text/javascript" charset="utf-8">
+		// Đánh dấu điều hướng
+		highlight_subnav("{:U('User/admin')}");
+	</script>
+</block>

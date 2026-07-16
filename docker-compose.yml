@@ -1,0 +1,93 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: wnskcex-mysql
+    restart: unless-stopped
+    ports:
+      - "3308:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root_local_dev
+      MYSQL_DATABASE: wnskcexcom
+      MYSQL_USER: wnskcexcom
+      MYSQL_PASSWORD: wnskcex_local_dev
+    volumes:
+      - wnskcex_mysql_data:/var/lib/mysql
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --default-authentication-plugin=mysql_native_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot_local_dev"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  php:
+    image: php:8.2-cli
+    container_name: wnskcex-php
+    working_dir: /var/www/laravel
+    volumes:
+      - ./laravel:/var/www/laravel
+    depends_on:
+      mysql:
+        condition: service_healthy
+    entrypoint: ["tail", "-f", "/dev/null"]
+
+  api:
+    image: php:8.2-cli
+    container_name: wnskcex-api
+    working_dir: /var/www/laravel
+    ports:
+      - "8000:8000"
+    environment:
+      APP_KEY: base64:6kr2lrhFMZ77PCpf58x+roIQ/wcd71buvIizJ6Llz20=
+      JWT_SECRET: local-dev-jwt-secret-change-before-production
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_DATABASE: wnskcexcom
+      DB_USERNAME: wnskcexcom
+      DB_PASSWORD: wnskcex_local_dev
+      CACHE_STORE: file
+      SESSION_DRIVER: file
+      QUEUE_CONNECTION: sync
+      CORS_ALLOWED_ORIGINS: http://localhost:3002,http://127.0.0.1:3002,http://localhost:3001,http://127.0.0.1:3001
+    volumes:
+      - ./laravel:/var/www/laravel
+    depends_on:
+      mysql:
+        condition: service_healthy
+    command: >
+      bash -c "docker-php-ext-install pdo_mysql >/dev/null 2>&1 &&
+      cp /var/www/laravel/.env.docker /var/www/laravel/.env &&
+      php artisan config:clear &&
+      php artisan serve --host=0.0.0.0 --port=8000"
+
+  scheduler:
+    image: php:8.2-cli
+    container_name: wnskcex-scheduler
+    working_dir: /var/www/laravel
+    restart: unless-stopped
+    environment:
+      APP_KEY: base64:6kr2lrhFMZ77PCpf58x+roIQ/wcd71buvIizJ6Llz20=
+      JWT_SECRET: local-dev-jwt-secret-change-before-production
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_DATABASE: wnskcexcom
+      DB_USERNAME: wnskcexcom
+      DB_PASSWORD: wnskcex_local_dev
+      CACHE_STORE: file
+      SESSION_DRIVER: file
+      QUEUE_CONNECTION: sync
+    volumes:
+      - ./laravel:/var/www/laravel
+    depends_on:
+      mysql:
+        condition: service_healthy
+    command: >
+      bash -c "docker-php-ext-install pdo_mysql >/dev/null 2>&1 &&
+      cp /var/www/laravel/.env.docker /var/www/laravel/.env &&
+      php artisan config:clear &&
+      php artisan schedule:work"
+
+volumes:
+  wnskcex_mysql_data:

@@ -1,0 +1,138 @@
+<include file="Public:header" />
+<link href="__PUBLIC__/Admin/index_css/style.css" rel="stylesheet">
+<link href="__PUBLIC__/Admin/index_js/morris.js-0.4.3/morris.css" rel="stylesheet">
+<!--<script src="__PUBLIC__/Admin/index_js/morris.js-0.4.3/morris.min.js" type="text/javascript"></script>-->
+<!--<script src="__PUBLIC__/Admin/index_js/morris.js-0.4.3/raphael-min.js" type="text/javascript"></script>-->
+<div id="main-content">
+	<div id="top-alert" class="fixed alert alert-error" style="display: none;">
+		<button class="close fixed" style="margin-top: 4px;">&times;</button>
+		<div class="alert-content">Nội dung cảnh báo</div>
+	</div>
+	<section class="wrapper">
+		<div class="main-title-h">
+			<span class="h1-title">Chi tiết người dùng</span>
+		</div>
+		<nav role="navigation" class="navbar  navbar-default">
+			<ul class="nav navbar-nav">
+				<li class="active"><a href="#">Hệ thống tự động thống kê và tạo báo cáo hàng ngày </a></li>
+			</ul>
+			<div class="collapse navbar-collapse">
+				<select id="search_field" name="field" class="navbar-btn navbar-right  form-control select select-default select-sm">
+					<option value="username"<empty name="field">selected</empty> >Tên đăng nhập</option>
+					<option value="mobile"<eq name="field" value="mobile">selected </eq>>Số điện thoại</option>
+					<option value="truename"<eq name="field" value="truename">selected </eq>>Họ và tên</option>
+					<option value="idcard"<eq name="field" value="idcard">selected </eq>>Số CMND</option>
+					<option value="alipay"<eq name="field" value="alipay">selected </eq>>Alipay</option>
+					<option value="bankcard"<eq name="field" value="bankcard">selected </eq>>Số tài khoản ngân hàng</option>
+				</select>
+			</div>
+		</nav>
+
+		<div class="row state-overview">
+			<div class="col-lg-3 col-sm-6">
+				<section class="panel">
+					<div class="symbol all-coin-wealth">
+						<i class="glyphicon glyphicon-bold"></i>
+					</div>
+					<div class="value">
+						<h1 class="count">495VND</h1>
+						<p>Giá trị tổng số tiền coin</p>
+					</div>
+				</section>
+			</div>
+			<div class="col-lg-3 col-sm-6">
+				<section class="panel">
+					<div class="symbol all-coin-transe">
+						<i class="glyphicon glyphicon-transfer"></i>
+					</div>
+					<div class="value">
+						<h1 class=" count2">947</h1>
+						<p>Khối lượng giao dịch</p>
+					</div>
+				</section>
+			</div>
+			<div class="col-lg-3 col-sm-6">
+				<section class="panel">
+					<div class="symbol all-coin-fee">
+						<i class="glyphicon glyphicon-tower"></i>
+					</div>
+					<div class="value">
+						<h1 class=" count3">328VND</h1>
+						<p>Tổng phí giao dịch</p>
+					</div>
+				</section>
+			</div>
+			<div class="col-lg-3 col-sm-6">
+				<section class="panel">
+					<div class="symbol all-coin-more">
+						<i class="glyphicon glyphicon-list-alt"></i>
+					</div>
+					<div class="value">
+						<h1 class=" count4">30%</h1>
+						<p>Tăng trưởng</p>
+					</div>
+				</section>
+			</div>
+		</div>
+
+		<div id="morris">
+			<div class="row">
+				<div class="col-lg-12">
+					<section class="panel">
+						<header class="panel-heading text-warning">
+							Phân bố tài sản trên thị trường
+						</header>
+						<div class="panel-body">
+							<div id="hero-bar" class="graph"></div>
+						</div>
+					</section>
+				</div>
+				<div class="col-lg-12">
+					<section class="panel">
+						<header class="panel-heading text-success">
+							Biểu đồ thống kê Nạp tiền/Rút tiền của hệ thống
+						</header>
+						<div class="panel-body">
+							<div id="hero-graph" class="graph"></div>
+						</div>
+					</section>
+				</div>
+			</div>
+		</div>
+	</section>
+</div>
+<script>
+	var Script = function () {
+		//morris chart
+		$(function () {
+			//币统计
+			Morris.Bar({
+				element: 'hero-bar',
+				data: [],
+				xkey: 'x',
+				ykeys: ['sum', 'gold', 'fz'],
+				labels: ['Tổng số', 'Có sẵn', 'Đóng băng'],
+				stacked: true
+			});
+		});
+
+		//市场交易报表
+		Morris.Area({
+			element: 'hero-graph',
+			data: [],
+
+			xkey: 'date',
+			ykeys: [],
+			labels: [],
+			hideHover: 'auto',
+			lineWidth: 1,
+			pointSize: 5,
+			lineColors: ['#4a8bc2', '#ff6c60', '#a9d86e'],
+			fillOpacity: 0.5,
+			smooth: true,
+			postUnits:' VND',
+			xLabels:'day',
+		});
+	}();
+</script>
+<include file="Public:footer" />

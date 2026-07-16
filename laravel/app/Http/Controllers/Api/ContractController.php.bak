@@ -1,0 +1,503 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use App\Models\Bill;
+use App\Models\Ctmarket;
+use App\Models\Hyorder;
+use App\Models\Hysetting;
+use App\Models\User;
+use App\Models\UserCoin;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Validator;
+use Tymon\JWTAuth\Facades\JWTAuth;
+use Illuminate\Support\Facades\DB;
+
+class ContractController extends Controller
+{
+    private $apiKey;
+
+    public function __construct()
+    {
+        $this->apiKey = env('TWELVE_DATA_API_KEY');
+    }
+
+    public function contractProgress(Request $request)
+    {
+        try {
+            // Get authenticated user
+            $user = JWTAuth::user();
+
+            // Get contractjc
+            $contractjc = Hyorder::where('uid', $user->id)
+                ->where('status', 1)
+                ->orderByDesc('id')
+                ->first();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Lấy hợp đồng tiến trình thành công',
+                'data' => $contractjc ? $contractjc->toArray() : [],
+            ], 200);
+        } catch (\Exception $e) {
+            \Log::error('Progress contract retrieval failed', ['error' => $e->getMessage()]);
+            return response()->json([
+                'status' => false,
+                'message' => 'Lấy hợp đồng tiến trình thất bại. Vui lòng thử lại sau.',
+            ], 500);
+        }
+    }
+    public function contractjc(Request $request)
+    {
+        try {
+            // Get authenticated user
+            $user = JWTAuth::user();
+
+            // Get contractjc
+            $contractjc = Hyorder::where('uid', $user->id)
+                ->where('status', 1)
+                ->orderBy('id', 'desc')
+                ->get();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Contractjc retrieved successfully',
+                'data' => $contractjc->toArray(),
+            ], 200);
+        } catch (\Exception $e) {
+            \Log::error('Contractjc retrieval failed', ['error' => $e->getMessage()]);
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to retrieve contractjc. Try again later.',
+            ], 500);
+        }
+    }
+    public function contractpc(Request $request)
+    {
+        try {
+            // Get authenticated user
+            $user = JWTAuth::user();
+
+            // Get contractpc
+            $contractpc = Hyorder::where('uid', $user->id)
+                ->where('status', '!=', 1)
+                ->orderBy('id', 'desc')
+                ->get();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Contractpc retrieved successfully',
+                'data' => $contractpc->toArray(),
+            ], 200);
+        } catch (\Exception $e) {
+            \Log::error('Contractpc retrieval failed', ['error' => $e->getMessage()]);
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to retrieve contractpc. Try again later.',
+            ], 500);
+        }
+    }
+    public function coinList(Request $request)
+    {
+        try {
+            // Get coins
+            $coins = Ctmarket::where('status', 1)
+                ->orderBy('sort')
+                ->select('id', 'coinname', 'name', 'symbol', 'title', 'sort', 'status')
+                ->get();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Coins retrieved successfully',
+                'data' => $coins->toArray(),
+            ], 200);
+        } catch (\Exception $e) {
+            \Log::error('Coins retrieval failed', ['error' => $e->getMessage()]);
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to retrieve settings. Try again later.',
+            ], 500);
+        }
+    }
+    public function getPrice(Request $request)
+    {
+        $symbol = strtoupper(trim($request->get('symbol')));
+
+        if (empty($symbol)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Symbol is required'
+            ], 400);
+        }
+
+        try {
+            $priceData = $this->fetchPrice($symbol);
+
+            return response()->json([
+                'success' => true,
+                'symbol'  => $symbol,
+                'data'    => $priceData
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch price',
+                'error'   => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getAllPrices(Request $request)
+    {
+        $yahooMap = [
+            'XAUUSD' => 'GC=F',
+            'XAGUSD' => 'SI=F',
+            'GBPUSD' => 'GBPUSD=X',
+            'USDJPY' => 'USDJPY=X',
+            'EURUSD' => 'EURUSD=X',
+            'AAPL'   => 'AAPL',
+        ];
+
+        $results = [];
+
+        foreach ($yahooMap as $symbol => $yahooSymbol) {
+            try {
+                $priceData = $this->fetchPrice($symbol);
+                $results[] = [
+                    'symbol' => $symbol,
+                    'data' => $priceData
+                ];
+            } catch (\Exception $e) {
+                $results[] = [
+                    'symbol' => $symbol,
+                    'success' => false,
+                    'error' => $e->getMessage()
+                ];
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Prices retrieved successfully',
+            'data' => $results
+        ]);
+    }
+    private function fetchPrice(string $symbol)
+    {
+        $normalized = strtoupper($symbol);
+
+        // ==================== BINANCE (Crypto) ====================
+        if (str_ends_with($normalized, 'USDT')) {
+            $response = Http::get("https://api.binance.com/api/v3/ticker/24hr?symbol={$normalized}");
+
+            if ($response->ok()) {
+                $data = $response->json();
+                return [
+                    'source'         => 'binance',
+                    'close'          => (float) $data['lastPrice'],
+                    'change_percent' => (float) $data['priceChangePercent'],
+                    'high'           => (float) $data['highPrice'],
+                    'low'            => (float) $data['lowPrice'],
+                    'open'           => (float) $data['openPrice'],
+                ];
+            }
+        }
+
+        // ==================== YAHOO FINANCE (Vàng, Forex, Stock) ====================
+        $yahooMap = [
+            'XAUUSD' => 'GC=F',
+            'XAGUSD' => 'SI=F',
+            'GBPUSD' => 'GBPUSD=X',
+            'USDJPY' => 'USDJPY=X',
+            'EURUSD' => 'EURUSD=X',
+            'AAPL'   => 'AAPL',
+        ];
+
+        $yahooSymbol = $yahooMap[$normalized] ?? $normalized;
+
+        $response = Http::withHeaders([
+            'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        ])->get("https://query1.finance.yahoo.com/v8/finance/chart/{$yahooSymbol}");
+
+        if ($response->ok()) {
+            $data = $response->json();
+            $meta = $data['chart']['result'][0]['meta'] ?? null;
+
+            if ($meta && isset($meta['regularMarketPrice'])) {
+                $prev = $meta['previousClose'] ?? $meta['regularMarketPrice'];
+                $changePercent = $prev > 0 
+                    ? round((($meta['regularMarketPrice'] - $prev) / $prev) * 100, 4) 
+                    : 0;
+
+                return [
+                    'source'         => 'yahoo',
+                    'close'          => (float) $meta['regularMarketPrice'],
+                    'change_percent' => (float) $changePercent,
+                    'high'           => (float) ($meta['regularMarketDayHigh'] ?? 0),
+                    'low'            => (float) ($meta['regularMarketDayLow'] ?? 0),
+                ];
+            }
+        }
+
+        throw new \Exception("Cannot fetch price for symbol: {$symbol}");
+    }
+    public function settings(Request $request)
+    {
+        try {
+            // Get settings
+            $settings = Hysetting::first();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Settings retrieved successfully',
+                'data' => $settings->toArray(),
+            ], 200);
+        } catch (\Exception $e) {
+            \Log::error('Settings retrieval failed', ['error' => $e->getMessage()]);
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to retrieve settings. Try again later.',
+            ], 500);
+        }
+    }
+
+    public function createOrder(Request $request)
+    {
+        try {
+            // Get authenticated user
+            $user = JWTAuth::user();
+
+            // Check rzstatus
+            // if ($user->rzstatus != 2) {
+            //     return response()->json([
+            //         'status' => false,
+            //         'message' => 'Please complete your identity verification before placing an order.',
+            //     ], 422);
+            // }
+
+            // Validate request
+            $validator = Validator::make($request->all(), [
+                'ctime' => 'required|numeric|gt:0', // Thời gian giải quyết 0
+                'amount' => 'required|numeric|gt:0', // Số tiền đầu tư
+                'coinname' => 'required|string|max:50', // Tên đồng tiền (btcusdt, ethusdt)
+                'method' => 'required|integer|in:1,2', // 1: Mua tăng, 2: Mua giảm
+                'uprate' => 'required|numeric|gt:0', // Tỷ lệ lợi nhuận (ví dụ: 10 cho 10%)
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => $validator->errors()->first(),
+                ], 422);
+            }
+
+            // Get parent user invit
+            $puser = User::where('id', $user->invit_1)->select('invit')->first();
+            $invit = $puser ? ($puser->invit ?? 0) : 0;
+
+            // Get user coin balance
+            $userCoin = UserCoin::where('userid', $user->id)->first();
+            if (!$userCoin) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Không thể truy xuất số dư tài khoản. Vui lòng liên hệ hỗ trợ.',
+                ], 422);
+            }
+
+            // Get settings
+            $setting = Hysetting::where('id', 1)->select('hy_sxf', 'hy_min', 'hy_time', 'hy_min_per_frame', 'hy_max_per_frame')->first();
+            if (!$setting) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Lỗi khi lấy cài đặt. Vui lòng liên hệ hỗ trợ.',
+                ], 500);
+            }
+
+            // Validate ctime and min/max investment
+            $htime = explode(',', $setting->hy_time);
+            $index = array_search($request->ctime, $htime);
+            if ($index === false) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Thời gian được chọn không hợp lệ. Vui lòng chọn một thời gian hợp lệ.',
+                ], 422);
+            }
+
+            // $minArr = explode(',', $setting->hy_min_per_frame ?? '');
+            $maxArr = explode(',', $setting->hy_max_per_frame ?? '');
+
+            // $minAmount = isset($minArr[$index]) ? (float) $minArr[$index] : 0;
+            $maxAmount = isset($maxArr[$index]) ? (float) $maxArr[$index] : PHP_FLOAT_MAX;
+
+            // if ($request->amount < $minAmount) {
+            //     return response()->json([
+            //         'status' => false,
+            //         'message' => 'Investment amount is too low. Minimum is ' . $minAmount . ' USDT for this time frame.',
+            //     ], 422);
+            // }
+
+            if ($request->amount > $maxAmount) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Số tiền đầu tư quá cao. Tối đa là ' . $maxAmount . ' USDT cho khung thời gian này.',
+                ], 422);
+            }
+
+            // Calculate total cost
+            $sxf = $setting->hy_sxf;
+            $tmoney = $request->amount + ($request->amount * $sxf / 100);
+            if ($tmoney > $userCoin->usdt) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Số dư không đủ. Vui lòng nạp thêm tiền vào tài khoản.',
+                ], 422);
+            }
+
+            // $coinArr = explode('/', $request->coinname);
+            // $symbol = strtolower($coinArr[0] . $coinArr[1]);
+            $symbol = strtoupper($request->coinname);
+
+            // Get market price from Huobi API
+            // $coinApi = "https://www.okx.com/api/v5/market/history-index-candles?instId=" . $symbol;
+            // $response = Http::get($coinApi);
+            // if ($response->failed() || !isset($response['data'][0]['4'])) {
+            //     return response()->json([
+            //         'status' => false,
+            //         'message' => 'Error retrieving market price. Please contact support.',
+            //     ], 500);
+            // }
+            // $close = $response['data'][0]['4'];
+            $close = $this->fetchPrice($symbol)['close'] ?? 0;
+
+            // Start database transaction
+            DB::beginTransaction();
+
+            // Create order
+            $orderData = [
+                'uid' => $user->id,
+                'username' => $user->username,
+                'num' => $request->amount,
+                'hybl' => $request->uprate,
+                'hyzd' => $request->method,
+                'coinname' => $symbol,
+                'status' => 1,
+                'is_win' => false,
+                'buytime' => now()->format('Y-m-d H:i:s'),
+                'selltime' => now()->addSeconds($request->ctime * 60)->format('Y-m-d H:i:s'),
+                'intselltime' => now()->addSeconds($request->ctime * 60)->timestamp,
+                'buyprice' => $close,
+                'sellprice' => 0,
+                'ploss' => $tmoney + (($tmoney * $request->uprate) / 100),
+                'time' => $request->ctime,
+                'kongyk' => 0,
+                'invit' => $invit,
+            ];
+            $order = HyOrder::create($orderData);
+
+            // Decrease user coin balance
+            $decRe = UserCoin::where('userid', $user->id)->decrement('usdt', $tmoney);
+
+            // Create bill record
+            $billData = [
+                'uid' => $user->id,
+                'username' => $user->username,
+                'num' => $request->amount,
+                'coinname' => 'usdt',
+                'afternum' => $userCoin->usdt - $tmoney,
+                'type' => 3,
+                'addtime' => now()->format('Y-m-d H:i:s'),
+                'st' => 2,
+                'remark' => 'Buy ' . $request->coinname . ': placed an order',
+            ];
+            $bill = Bill::create($billData);
+
+            if ($order && $decRe && $bill) {
+                DB::commit();
+
+                // Prepare response data
+                $orderInfo = [
+                    'id' => $order->id,
+                    'hyzd' => $order->hyzd,
+                    'coinname' => $order->coinname,
+                    'buyprice' => $order->buyprice,
+                    'time' => $order->time * 60,
+                    'timer_newprice' => $close,
+                    'timer_buynum' => $order->num,
+                    'timer_price' => $order->buyprice,
+                ];
+
+                return response()->json([
+                    'status' => true,
+                    'message' => 'Đặt lệnh thành công',
+                    'data' => $orderInfo,
+                ], 200);
+            }
+
+            DB::rollBack();
+            return response()->json([
+                'status' => false,
+                'message' => 'Đã xảy ra lỗi khi đặt lệnh. Vui lòng thử lại sau.',
+            ], 500);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Order submission failed', ['error' => $e->getMessage()]);
+            return response()->json([
+                'status' => false,
+                'message' => 'Đã xảy ra lỗi khi đặt lệnh. Vui lòng thử lại sau.',
+            ], 500);
+        }
+    }
+
+    public function checkOrder(Request $request)
+    {
+        try {
+            // Validate request
+            $validator = Validator::make($request->all(), [
+                'id' => 'required|integer|exists:tw_hyorder,id',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => $validator->errors()->first(),
+                ], 422);
+            }
+
+            // Get authenticated user
+            $user = JWTAuth::user();
+
+            // Get order
+            $order = Hyorder::where('id', $request->id)
+                ->where('uid', $user->id)
+                ->first();
+
+            if (!$order) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Order not found.',
+                ], 404);
+            }
+
+            Artisan::call('app:process-orders');
+
+            // Refresh the order to get updated data
+            $order->refresh();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Order retrieved successfully',
+                'data' => $order->toArray(),
+            ], 200);
+        } catch (\Exception $e) {
+            \Log::error('Order check failed', ['error' => $e->getMessage()]);
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to check order. Try again later.',
+            ], 500);
+        }
+    }
+}

@@ -1,0 +1,69 @@
+<include file="Public:header"/>
+<div id="main-content">
+	<div id="top-alert" class="fixed alert alert-error" style="display: none;">
+		<button class="close fixed" style="margin-top: 4px;">&times;</button>
+		<div class="alert-content">Nội dung cảnh báo</div>
+	</div>
+	<div id="main" class="main">
+		<div class="main-title-h">
+			<span class="h1-title">Hỗ trợ trực tuyến</span>
+		</div>
+
+		<div class="data-table table-striped">
+			<form id="form"  method="post" class="form-horizontal">
+				<table class="">
+					<thead>
+					<tr>
+						<th class="row-selected row-selected">
+							<input class="check-all" type="checkbox"/>
+						</th>
+						<th class="">ID</th>
+						<th class="">Tài khoản thành viên</th>
+						<th class="">Nội dung</th>
+						<th class="">Thao tác</th>
+					</tr>
+					</thead>
+					<tbody>
+					<notempty name="list">
+						<volist name="list" id="vo">
+							<tr>
+								<td>
+									<input class="ids" type="checkbox" name="id[]" value="{$vo.id}"/>
+								</td>
+								<td>{$vo.id}</td>
+								<td>{$vo.username}</td>
+								<td>{$vo.content}</td>
+                                <td>
+						            <a class="btn btn-primary btn-xs" href="{:U('User/sendonline')}?id={$vo.id}">Phản hồi </a>
+						        </td>
+							</tr>
+						</volist>
+						<else/>
+						<td colspan="12" class="text-center empty-info"><i class="glyphicon glyphicon-exclamation-sign"></i>Không có dữ liệu</td>
+					</notempty>
+					</tbody>
+				</table>
+			</form>
+			<div class="page">
+				<div>{$page}</div>
+			</div>
+		</div>
+     
+	</div>
+   
+	
+</div>
+
+<script type="text/javascript">
+	// Gửi form
+	$('#submit').click(function () {
+		$('#form').submit();
+	});
+</script>
+<include file="Public:footer"/>
+<block name="script">
+	<script type="text/javascript" charset="utf-8">
+		// Đánh dấu điều hướng
+		highlight_subnav("{:U('User/online')}");
+	</script>
+</block>

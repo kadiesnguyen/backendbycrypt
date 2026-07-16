@@ -1,0 +1,1 @@
+import { TableSkeleton } from "@/components/list/ListPageParts"; export function NavigationListSkeleton() { return <TableSkeleton rows={8} cols={5} />; }

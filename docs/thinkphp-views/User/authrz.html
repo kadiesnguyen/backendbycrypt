@@ -1,0 +1,139 @@
+<include file="Public:header" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.2.0/jquery.magnific-popup.min.js"
+	integrity="sha512-fCRpXk4VumjVNtE0j+OyOqzPxF1eZwacU3kN3SsznRPWHgMTSSo7INc8aY03KQDBWztuMo5KjKzCFXI/a5rVYQ=="
+	crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.2.0/magnific-popup.min.css"
+	integrity="sha512-lvaVbvmbHhG8cmfivxLRhemYlTT60Ly9Cc35USrpi8/m+Lf/f/T8x9kEIQq47cRj1VQIFuxTxxCcvqiQeQSHjQ=="
+	crossorigin="anonymous" referrerpolicy="no-referrer" />
+<script type="text/javascript" src="__PUBLIC__/layer/laydate/laydate.js"></script>
+<div id="main-content">
+	<div id="top-alert" class="fixed alert alert-error" style="display: none;">
+		<button class="close fixed" style="margin-top: 4px;">&times;</button>
+		<div class="alert-content">Nội dung cảnh báo</div>
+	</div>
+	<div id="main" class="main">
+		<div class="main-title-h">
+			<span class="h1-title"><a href="{:U('User/index')}">Quản lý thành viên</a> &gt;&gt;</span>
+			<span class="h1-title">Xác minh xem xét</span>
+		</div>
+		<div class="tab-wrap">
+			<div class="tab-content">
+				<form id="form" action="{:U('User/upanthrz')}" method="post" class="form-horizontal">
+					<div id="tab" class="tab-pane in tab">
+						<div class="form-item cf">
+							<table>
+
+								<tr class="controls">
+									<td class="item-label">{:L('Username')} :</td>
+									<td>
+										<input type="text" style="color:#000;" readonly="readonly"
+											class="form-control input-10x" name="username" value="{$info.username}">
+									</td>
+									<td class="item-note"></td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('ID Card Number')} :</td>
+									<td>
+										<input type="text" style="color:#000;" readonly="readonly"
+											class="form-control input-10x" name="cccd" value="{$info.cccd}">
+									</td>
+									<td class="item-note"></td>
+								</tr>
+
+								<tr class="controls">
+									<td class="item-label">{:L('Front of ID Card')} :</td>
+									<td>
+										<a class="image-popup" href="{$info.cardzm}">
+											<img src="{$info.cardzm}" style="height:100px;" />
+										</a>
+									</td>
+									<td class="item-note"></td>
+								</tr>
+
+								<tr class="controls">
+									<td class="item-label">{:L('Back of ID Card')} :</td>
+									<td>
+										<a class="image-popup" href="{$info.cardfm}">
+											<img src="{$info.cardfm}" style="height:100px;" />
+										</a>
+									</td>
+									<td class="item-note"></td>
+								</tr>
+
+								<tr class="controls">
+									<td class="item-label">{:L('Application Time')} :</td>
+									<td>
+										<input type="text" style="color:#000;" readonly="readonly"
+											class="form-control input-10x" name="rztime"
+											value="<?php echo date('Y-m-d H:i:s',$info['rztime']);?>">
+									</td>
+									<td class="item-note"></td>
+								</tr>
+
+								<tr class="controls">
+									<td class="item-label">{:L('Verification')} :</td>
+									<td>
+										<select name="kjid" class="form-control input-10x">
+											<foreach name="klist" item="vo">
+												<option value="{$vo.id}" <eq name="vo.txstate" value="$vo.id}">selected
+													</eq>>{$vo.title}</option>
+											</foreach>
+										</select>
+									</td>
+									<td class="item-note" style="color:red;"></td>
+								</tr>
+
+								<tr class="controls">
+									<td class="item-label">{:L('Action Type')} :</td>
+									<td>
+										<select name="rzstatus" class="form-control input-10x">
+											<option value="2" <eq name="data.rzstatus" value="2">selected</eq>>{:L('Approve')}</option>
+											<option value="3" <eq name="data.rzstatus" value="3">selected</eq>>{:L('Reject')}</option>
+										</select>
+									</td>
+									<td class="item-note" style="color:red;"></td>
+								</tr>
+
+								<input type="hidden" name="uid" value="{$info.id}" />
+
+								<tr class="controls">
+									<td class="item-label"></td>
+									<td>
+										<div class="form-item cf">
+											<button class="btn submit-btn ajax-post" id="submit" type="submit"
+												target-form="form-horizontal">{:L('Submit')}</button>
+											<a class="btn btn-return" href="{$Think.server.HTTP_REFERER}">{:L('Cancel')}</a>
+											<notempty name="data.id"><input type="hidden" name="id"
+													value="{$data.id}" />
+											</notempty>
+										</div>
+									</td>
+								</tr>
+							</table>
+						</div>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+<script type="text/javascript">
+	// Gửi form
+	$('#submit').click(function () {
+		$('#form').submit();
+	});
+</script>
+<include file="Public:footer" />
+<script type="text/javascript">
+	$(document).ready(function () {
+		$('.image-popup').magnificPopup({
+			type: 'image'
+		});
+	});
+</script>
+<block name="script">
+	<script type="text/javascript" charset="utf-8">
+		// Đánh dấu điều hướng
+		highlight_subnav("{:U('User/index')}");
+	</script>
+</block>

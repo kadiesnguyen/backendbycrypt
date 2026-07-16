@@ -1,0 +1,69 @@
+<include file="Public:header"/>
+<div id="main-content">
+	<div id="top-alert" class="fixed alert alert-error" style="display: none;">
+		<button class="close fixed" style="margin-top: 4px;">×</button>
+		<div class="alert-content">{:L('Alert content')}</div>
+	</div>
+	<div id="main" class="main">
+		<div class="main-title-h">
+			<span class="h1-title">{:L('Mining machine management')}</span>
+			<span class="h2-title">>><a href="{:U('Kuangm/overlist')}">{:L('Expired mining machines')}</a></span>
+		</div>
+		<div class="data-table table-striped">
+			<table class="">
+				<thead>
+				<tr>
+					<th class="row-selected row-selected"><input class="check-all" type="checkbox"/></th>
+					<th class="">ID</th>
+					<th class="">{:L('Member account')}</th>
+					<th class="">{:L('Type')}</th>
+					<th class="">{:L('Name')}</th>
+					<th class="">{:L('Image')}</th>
+					<th class="">{:L('Purchase time')}</th>
+					<th class="">{:L('End time')}</th>
+					<th class="">{:L('Mining machine status')}</th>
+					<th class="">{:L('Income frequency')}</th>
+					<th class="">{:L('Output currency')}</th>
+				</tr>
+				</thead>
+				<tbody>
+				<notempty name="list">
+					<volist name="list" id="vo">
+						<tr>
+							<td><input class="ids" type="checkbox" name="id[]" value="{$vo.id}"/></td>
+							<td>{$vo.id}</td>
+							<td>{$vo.username}</td>
+							<td>
+								<if condition="$vo.type eq 1">
+									{:L('Exclusive')}
+								<elseif condition="$vo.type eq 2" />
+									{:L('Shared')}
+								</if>
+							</td>
+							<td>{$vo.kjtitle}</td>
+							<td><img src="/Upload/public/{$vo.imgs}" style="height:50px;"></td>
+							<td><?php echo date("m-d H:i",strtotime($vo['addtime']));?></td>
+							<td><?php echo date("m-d H:i",strtotime($vo['endtime']));?></td>
+							<td><span style="color:red;">{:L('Expired')}</span></td>
+							<td><?php echo ($vo['cycle'] - $vo['synum']);?> lần</td>
+							<td><?php echo strtoupper($vo['outcoin']);?></td>
+						</tr>
+					</volist>
+					<else/>
+					<td colspan="12" class="text-center empty-info"><i class="glyphicon glyphicon-exclamation-sign"></i>{:L('No data')}</td>
+				</notempty>
+				</tbody>
+			</table>
+			<div class="page">
+				<div>{$page}</div>
+			</div>
+		</div>
+	</div>
+</div>
+<include file="Public:footer"/>
+<block name="script">
+	<script type="text/javascript" charset="utf-8">
+		// Đánh dấu điều hướng
+		highlight_subnav("{:U('Kuangm/overlist')}");
+	</script>
+</block>

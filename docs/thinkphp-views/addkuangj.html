@@ -1,0 +1,274 @@
+<include file="Public:header"/>
+<style>
+	.hoh td.item-label,.hoh td.item-note{
+		height:80px;line-height:80px;
+	}
+	.gezibg {
+		padding:5px;width:168px;background:url('/Public/Admin/ecshe_img/imgbg.png');
+	}
+</style>
+
+<div id="main-content">
+	<div id="top-alert" class="fixed alert alert-error" style="display: none;">
+		<button class="close fixed" style="margin-top: 4px;">×</button>
+		<div class="alert-content">{:L('Alert content')}</div>
+	</div>
+	<div id="main" class="main">
+		<div class="main-title-h">
+			<span class="h1-title">{:L('Add or edit mining machine')}</span>
+		</div>
+		<div class="tab-wrap">
+			<div class="tab-content">
+				<form id="form" action="{:U('Kuangm/addkj')}" method="post" class="form-horizontal" enctype="multipart/form-data">
+					<div id="tab" class="tab-pane in tab">
+						<div class="form-item cf">
+							<table>
+								<tr class="controls">
+									<td class="item-label">{:L('Mining machine name')} :</td>
+									<td style="width:300px;">
+										<input type="text" class="form-control" style="width:300px;" name="title" value="{$data['title']}">
+									</td>
+									<td class="item-note" style="color:red;">*{:L('Mining machine name note')}</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Purchase type')} :</td>
+									<td style="width:300px;">
+										<select type="text" class="form-control" style="width:300px;" name="rtype">
+											<option value="1" <if condition="$data.rtype eq 1">selected</if>>{:L('Sell mining machine')}</option>
+											<option value="2" <if condition="$data.rtype eq 2">selected</if>>{:L('Own mining machine')}</option>
+										</select>
+									</td>
+									<td class="item-note" style="color:red;">*{:L('Purchase and income sharing note')}</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Mining machine type')} :</td>
+									<td style="width:300px;">
+										<select type="text" class="form-control" style="width:300px;" name="type">
+											<option value="1" <if condition="$data.type eq 1">selected</if>>{:L('Exclusive')}</option>
+											<option value="2" <if condition="$data.type eq 2">selected</if>>{:L('Shared')}</option>
+										</select>
+									</td>
+									<td class="item-note" style="color:red;">*{:L('Purchase and income sharing note')}</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Share ratio')} :</td>
+									<td style="width:300px;">
+										<input type="text" class="form-control" style="width:300px;" name="sharebl" value="{$data['sharebl']}">
+									</td>
+									<td class="item-note" style="color:red;">*{:L('Share ratio note')}</td>
+								</tr>
+								<if condition="$data.type eq 2">
+									<tr class="controls">
+										<td class="item-label">{:L('Share verification code')} :</td>
+										<td style="width:300px;">
+											<input type="text" class="form-control" style="width:300px;" readonly="readonly" value="{$data['sharecode']}">
+										</td>
+										<td class="item-note" style="color:red;">*{:L('Share verification code note')}</td>
+									</tr>
+								</if>
+								<tr class="controls">
+									<td class="item-label">{:L('Mining machine info')} :</td>
+									<td>
+										<textarea class="form-control" rows="3" cols="26" name="content" style="border: 1px solid #dedede;width: 300px;">{$data['content']}</textarea>
+									</td>
+									<td class="item-note"></td>
+								</tr>
+								<tr class="controls hoh">
+									<td class="item-label">{:L('Mining machine image')} :</td>
+									<td>
+										<div id="addpicContainer" class="gezibg">
+											<notempty name="data.imgs">
+												<img id="up_img" onclick="getElementById('inputfile').click()" style="cursor:pointer;max-height:62px;" title="{:L('Click to add image')}" alt="{:L('Click to add image')}" src="/Upload/public/{$data.imgs}">
+											<else/>
+												<img id="up_img" onclick="getElementById('inputfile').click()" style="cursor:pointer;max-height:62px;" title="{:L('Click to add image')}" alt="{:L('Click to add image')}" src="__PUBLIC__/Admin/images/addimg.png">
+											</notempty>
+											<input type="hidden" id="img" name="imgs" value="{$data.imgs}">
+											<input type="file" id="inputfile" style="height:0;width:0;z-index: -1; position: absolute;left: 10px;top: 5px;" value=""/>
+										</div>
+									</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Output currency')} :</td>
+									<td style="width:300px;">
+										<select type="text" class="form-control" style="width:300px;" name="outcoin">
+											{$data.outcoin}
+											<foreach name="coind" item="vo">
+												<option value="{$vo.name}" <?php if(trim($data['outcoin']) == $vo['name']){?>selected<?php }?>>{$vo.name}{$vo.title}</option>
+											</foreach>
+										</select>
+									</td>
+									<td class="item-note" style="color:red;">*{:L('Output currency note')}</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Daily output')} :</td>
+									<td style="width:300px;">
+										<select type="text" class="form-control" style="width:140px;float:left;" name="outtype">
+											<option value="1" <if condition="$data.outtype eq 1">selected</if>>{:L('By production value')}</option>
+											<option value="2" <if condition="$data.outtype eq 2">selected</if>>{:L('By token production')}</option>
+										</select>
+										<input type="text" class="form-control" style="width:140px;float:left;margin-left:20px;" name="dayoutnum" value="{$data['dayoutnum']}">
+									</td>
+									<td class="item-note" style="color:red;">*{:L('Daily output note')}</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Single machine purchase price')} :</td>
+									<td style="width:300px;">
+										<input type="text" class="form-control" style="width:140px;float:left;" name="pricenum" value="{$data['pricenum']}">
+										<select type="text" class="form-control" style="width:140px;float:left;margin-left:20px" name="pricecoin">
+											<foreach name="coind" item="vo">
+												<option value="{$vo.name}" <?php if(trim($data['pricecoin']) == $vo['name']){?>selected<?php }?>>{$vo.name}{$vo.title}</option>
+											</foreach>
+										</select>
+									</td>
+									<td class="item-note" style="color:red;">*{:L('Single machine purchase price note')}</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Purchase limit')} :</td>
+									<td style="width:300px;">
+										<input type="text" class="form-control" style="width:300px;" name="buymax" value="{$data['buymax']}">
+									</td>
+									<td class="item-note" style="color:red;">*{:L('Purchase limit note')}</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Mining machine cycle time')} :</td>
+									<td style="width:300px;">
+										<input type="text" class="form-control" style="width:300px;" name="cycle" value="{$data['cycle']}">
+									</td>
+									<td class="item-note" style="color:red;">*{:L('Mining machine cycle time note')}</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Mining machine power')} :</td>
+									<td style="width:300px;">
+										<input type="text" class="form-control" style="width:300px;" name="suanl" value="{$data['suanl']}">
+									</td>
+									<td class="item-note" style="color:red;">*{:L('Mining machine power note')}</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Total mining machines in stock')} :</td>
+									<td style="width:300px;">
+										<input type="text" class="form-control" style="width:300px;" name="allnum" value="{$data['allnum']}">
+									</td>
+									<td class="item-note"></td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Planned sales volume')} :</td>
+									<td style="width:300px;">
+										<input type="text" class="form-control" style="width:300px;" name="ycnum" value="{$data['ycnum']}">
+									</td>
+									<td class="item-note"></td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Reward currency type')} :</td>
+									<td style="width:300px;">
+										<select type="text" class="form-control" style="width:300px;" name="jlcoin">
+											<foreach name="coind" item="vo">
+												<option value="{$vo.name}" <?php if(trim($data['jlcoin']) == $vo['name']){?>selected<?php }?>>{$vo.name}{$vo.title}</option>
+											</foreach>
+										</select>
+									</td>
+									<td class="item-note"></td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Reward amount')} :</td>
+									<td style="width:300px;">
+										<input type="text" class="form-control" style="width:300px;" name="jlnum" value="{$data['jlnum']}">
+									</td>
+									<td class="item-note"></td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Mining machine status')} :</td>
+									<td style="width:300px;">
+										<select type="text" class="form-control" style="width:300px;" name="status" value="{$data['status']}">
+											<option value="1" <if condition="$data.status eq 1">selected</if>>{:L('Available')}</option>
+											<option value="2" <if condition="$data.status eq 2">selected</if>>{:L('Disabled')}</option>
+										</select>
+									</td>
+									<td class="item-note"></td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Freeze output token')} :</td>
+									<td style="width:300px;">
+										<select type="text" class="form-control" style="width:300px;" name="djout" value="{$data['djout']}">
+											<option value="1" <if condition="$data.djout eq 1">selected</if>>{:L('No')}</option>
+											<option value="2" <if condition="$data.djout eq 2">selected</if>>{:L('Available')}</option>
+										</select>
+									</td>
+									<td class="item-note"></td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Freeze output token time')} :</td>
+									<td style="width:300px;">
+										<input type="text" class="form-control" style="width:300px;" name="djday" value="{$data['djday']}">
+									</td>
+									<td class="item-note" style="color:red;">*{:L('Freeze output token time note')}</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Purchase requirement')} :</td>
+									<td style="width:300px;">
+										<select type="text" class="form-control" style="width:140px;float:left;" name="buyask">
+											<option value="1" <if condition="$data.buyask eq 1">selected</if>>{:L('By token amount')}</option>
+											<option value="2" <if condition="$data.buyask eq 2">selected</if>>{:L('By team')}</option>
+										</select>
+										<input type="text" class="form-control" style="width:140px;float:left;margin-left:20px;" name="asknum" value="{$data['asknum']}">
+									</td>
+									<td class="item-note" style="color:red;">*{:L('Purchase requirement note')}</td>
+								</tr>
+								<input type="hidden" id="kid" name="kid" value="{$data['id']}" />
+								<tr class="controls">
+									<td class="item-label"></td>
+									<td>
+										<div class="form-item cf">
+											<button class="btn submit-btn ajax-post" target-form="form-horizontal" id="submit" type="submit">{:L('Save')}</button>
+											<a class="btn btn-return" href="{$Think.server.HTTP_REFERER}">{:L('Return')}</a>
+										</div>
+									</td>
+								</tr>
+							</table>
+						</div>
+					</div>
+				</form>
+				<script type="text/javascript">
+					/** 主LOGO上传 **/
+					$(document).ready(function () {
+						//响应文件添加成功事件
+						$("#inputfile").change(function () {
+							//创建FormData对象
+							var data = new FormData();
+							//为FormData对象添加数据
+							$.each($('#inputfile')[0].files, function (i, file) {
+								data.append('upload_file' + i, file);
+							});
+							//发送数据
+							$.ajax({
+								url: '/Admin/Kuangm/image',
+								type: 'POST',
+								data: data,
+								cache: false,
+								contentType: false,
+								processData: false,
+								success: function (data) {
+									if (data) {
+										$('#up_img').attr("src", '/Upload/public/' + $.trim(data));
+										$('#img').val($.trim(data));
+										$('#up_img').show();
+									}
+								},
+								error: function () {
+									alert('{:L("Upload error")}');
+									$(".loading").hide();
+								}
+							});
+						});
+					});
+				</script>
+			</div>
+		</div>
+	</div>
+</div>
+<include file="Public:footer"/>
+<block name="script">
+	<script type="text/javascript" charset="utf-8">
+		// Đánh dấu điều hướng
+		highlight_subnav("{:U('Kuangm/index')}");
+	</script>
+</block>

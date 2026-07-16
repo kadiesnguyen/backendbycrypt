@@ -1,0 +1,23 @@
+# env / secrets
+.env
+.env.local
+.env.*.local
+.env.bak*
+!.env.example
+!.env.*.example
+
+# deps & build
+node_modules/
+vendor/
+.next/
+out/
+public/build
+public/hot
+
+# local tooling state
+.migration-loop-state.json
+.migration-playbook.json
+
+# OS / IDE
+.DS_Store
+*.log

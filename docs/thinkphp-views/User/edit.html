@@ -1,0 +1,228 @@
+<include file="Public:header" />
+<script type="text/javascript" src="__PUBLIC__/layer/laydate/laydate.js"></script>
+<div id="main-content">
+	<div id="top-alert" class="fixed alert alert-error" style="display: none;">
+		<button class="close fixed" style="margin-top: 4px;">×</button>
+		<div class="alert-content">{:L('Alert content')}</div>
+	</div>
+	<div id="main" class="main">
+		<div class="main-title-h">
+			<span class="h1-title"><a href="{:U('User/index')}">{:L('Member management')}</a> >></span>
+			<span class="h1-title">
+				<empty name="data">{:L('Add user')}
+					<else />{:L('Edit user')}
+				</empty>
+			</span>
+		</div>
+		<div class="tab-wrap">
+			<div class="tab-content">
+				<form id="form" action="{:U('User/edit')}" method="post" class="form-horizontal">
+					<div id="tab" class="tab-pane in tab">
+						<div class="form-item cf">
+							<table>
+
+								<tr class="controls">
+									<td class="item-label">{:L('Username')}:</td>
+									<td>
+										<input type="text" class="form-control input-10x" name="username"
+											value="{$data.username}">
+									</td>
+									<td class="item-note"></td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Password')}:</td>
+									<td><input type="text" class="form-control input-10x" name="password" value=""></td>
+									<td class="item-note" style="color:red;">{:L('Leave blank to not update')}</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Trading password')}:</td>
+									<td><input type="text" class="form-control input-10x" name="paypassword" value="">
+									</td>
+									<td class="item-note" style="color:red;">{:L('Leave blank to not update')}</td>
+								</tr>
+
+								<tr class="controls">
+									<td class="item-label">{:L('Referrer generation')} 1:</td>
+									<td><input type="text" class="form-control input-10x" name="invit_1"
+											value="{$data.invit_1}">
+									</td>
+									<td class="item-note" style="color:red;">{:L('Referrer generation 1')}</td>
+								</tr>
+
+								<tr class="controls">
+									<td class="item-label">{:L('Referrer generation')} 2:</td>
+									<td><input type="text" class="form-control input-10x" name="invit_2"
+											value="{$data.invit_2}">
+									</td>
+									<td class="item-note" style="color:red;">{:L('Referrer generation 2')}</td>
+								</tr>
+
+								<tr class="controls">
+									<td class="item-label">{:L('Referrer generation')} 3:</td>
+									<td><input type="text" class="form-control input-10x" name="invit_3"
+											value="{$data.invit_3}">
+									</td>
+									<td class="item-note" style="color:red;">{:L('Referrer generation 3')}</td>
+								</tr>
+
+								<empty name="data">
+									<tr class="controls">
+										<td class="item-label">{:L('Invitation code')}:</td>
+										<td><input type="text" class="form-control input-10x" name="invit" value="">
+										</td>
+										<td class="item-note" style="color:red;">{:L('Referrer invitation code')}</td>
+									</tr>
+								</empty>
+
+								<tr class="controls">
+									<td class="item-label">{:L('Login status')}:</td>
+									<td>
+										<select name="status" class="form-control input-10x">
+											<option value="1" <eq name="data.status" value="1">selected</eq>
+												>{:L('Normal')}</option>
+											<option value="2" <eq name="data.status" value="2">selected</eq>
+												>{:L('Freeze')}</option>
+										</select>
+									</td>
+									<td class="item-note" style="color:red;">{:L('Member login status')}</td>
+								</tr>
+
+								<tr class="controls">
+									<td class="item-label">{:L('Withdrawal status')}:</td>
+									<td>
+										<select name="txstate" class="form-control input-10x">
+											<option value="1" <eq name="data.txstate" value="1">selected</eq>
+												>{:L('Normal')}</option>
+											<option value="2" <eq name="data.txstate" value="2">selected</eq>
+												>{:L('Prohibited')}</option>
+										</select>
+									</td>
+									<td class="item-note" style="color:red;">{:L('Member withdrawal status')}</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Result mode')}:</td>
+									<td>
+										<select name="hy_result_mode" class="form-control input-10x">
+											<option value="0" <eq name="data.hy_result_mode" value="0">selected</eq>
+												>{:L('Auto')}</option>
+											<option value="1" <eq name="data.hy_result_mode" value="1">selected</eq>
+												>{:L('Win')}</option>
+											<option value="2" <eq name="data.hy_result_mode" value="2">selected</eq>
+												>{:L('Loss')}</option>
+										</select>
+									</td>
+									<td class="item-note" style="color:red;">{:L('Customize the results of user bets')}</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Customer service link')}:</td>
+									<td>
+										<input type="text" class="form-control input-10x" name="kefu"
+											value="{$data.kefu}">
+									</td>
+									<td class="item-note"></td>
+								</tr>
+								<!-- <tr class="controls">
+									<td class="item-label">Địa chỉ TRC20 :</td>
+									<td>
+										<input type="text" class="form-control input-10x" name="trc" value="{$data.trc}">
+									</td>
+									<td class="item-note"></td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">Địa chỉ ERC20 :</td>
+									<td>
+										<input type="text" class="form-control input-10x" name="erc" value="{$data.erc}">
+									</td>
+									<td class="item-note"></td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">Địa chỉ ETH :</td>
+									<td>
+										<input type="text" class="form-control input-10x" name="eth" value="{$data.eth}">
+									</td>
+									<td class="item-note"></td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">Địa chỉ BTC :</td>
+									<td>
+										<input type="text" class="form-control input-10x" name="btc" value="{$data.btc}">
+									</td>
+									<td class="item-note"></td>
+								</tr> -->
+								<tr class="controls">
+									<td class="item-label">{:L('Bank name')}:</td>
+									<td>
+										<input type="text" class="form-control input-10x" name="bank_name"
+											value="{$data.bank_name}">
+									</td>
+									<td class="item-note"></td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Account number')}:</td>
+									<td>
+										<input type="text" class="form-control input-10x" name="bank_acc_no"
+											value="{$data.bank_acc_no}">
+									</td>
+									<td class="item-note"></td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Account holder name')}:</td>
+									<td>
+										<input type="text" class="form-control input-10x" name="bank_acc_name"
+											value="{$data.bank_acc_name}">
+									</td>
+									<td class="item-note"></td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Electronic wallet')}:</td>
+									<td>
+										<input type="text" class="form-control input-10x" name="wallet"
+											value="{$data.wallet}">
+									</td>
+									<td class="item-note"></td>
+								</tr>
+
+								<if condition="$data.rzstatus eq 2">
+									<td class="item-label">{:L('Phone')}:</td>
+									<td>
+										<input type="text" class="form-control input-10x" name="cccd"
+											value="{$data.cccd}">
+									</td>
+									<td class="item-note"></td>
+								</if>
+
+								<tr class="controls">
+									<td class="item-label"></td>
+									<td>
+										<div class="form-item cf">
+											<button class="btn submit-btn ajax-post" id="submit" type="submit"
+												target-form="form-horizontal">{:L('Save')}</button>
+											<a class="btn btn-return" href="{$Think.server.HTTP_REFERER}">{:L('Go
+												back')}</a>
+											<notempty name="data.id"><input type="hidden" name="id"
+													value="{$data.id}" />
+											</notempty>
+										</div>
+									</td>
+								</tr>
+							</table>
+						</div>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+<script type="text/javascript">
+	// Gửi form
+	$('#submit').click(function () {
+		$('#form').submit();
+	});
+</script>
+<include file="Public:footer" />
+<block name="script">
+	<script type="text/javascript" charset="utf-8">
+		// Đánh dấu điều hướng
+		highlight_subnav("{:U('User/index')}");
+	</script>
+</block>

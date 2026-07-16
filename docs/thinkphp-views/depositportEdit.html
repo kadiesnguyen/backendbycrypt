@@ -1,0 +1,82 @@
+<include file="Public:header"/>
+<div id="main-content">
+    <div id="top-alert" class="fixed alert alert-error" style="display: none;">
+        <button class="close fixed" style="margin-top: 4px;">&times;</button>
+        <div class="alert-content">{:L('Alert content')}</div>
+    </div>
+    <div id="main" class="main">
+        <div class="main-title-h">
+            <span class="h1-title"><a href="{:U('Config/depositport')}">{:L('Deposit Port Configuration')}</a> >></span>
+            <span class="h1-title"><empty name="data">{:L('Add new')}<else/>{:L('Edit')}</empty></span>
+        </div>
+        <div class="tab-wrap">
+            <div class="tab-content">
+                <form id="form" action="{:U('Config/depositportEdit')}" method="post" class="form-horizontal">
+                    <div id="tab" class="tab-pane in tab">
+                        <div class="form-item cf">
+                            <table>
+                                <tr class="controls">
+                                    <td class="item-label">{:L('Name')} :</td>
+                                    <td><input type="text" class="form-control input-10x" name="name" value="{$data.name}"></td>
+                                    <td class="item-note"></td>
+                                </tr>
+                                <tr class="controls">
+                                    <td class="item-label">{:L('Wallet name')} :</td>
+                                    <td><input type="text" class="form-control input-10x" name="wallet" value="{$data.wallet}" placeholder="TRC20"></td>
+                                    <td class="item-note"></td>
+                                </tr>
+                                <tr class="controls">
+                                    <td class="item-label">{:L('Wallet address')} :</td>
+                                    <td><input type="text" class="form-control input-10x" name="address" value="{$data.address}"></td>
+                                    <td class="item-note"></td>
+                                </tr>
+                                <tr class="controls">
+                                    <td class="item-label">{:L('Wallet coin')} :</td>
+                                    <td>
+                                        <select name="coin" class="form-control input-10x">
+                                            <volist name="coin_list" id="vo">
+                                                <option value="{$vo.name}" <eq name="data.coin" value="$vo['name']">selected</eq>>{$vo.title} ({$vo.name|strtoupper})</option>
+                                            </volist>
+                                        </select>
+                                    </td>
+                                    <td class="item-note"></td>
+                                </tr>
+                                <tr class="controls">
+                                    <td class="item-label">{:L('Status')} :</td>
+                                    <td>
+                                        <select name="status" class="form-control input-10x">
+                                            <option value="1" <eq name="data.status" value="1">selected</eq>>{:L('Available')}</option>
+                                            <option value="0" <eq name="data.status" value="0">selected</eq>>{:L('Disabled')}</option>
+                                        </select>
+                                    </td>
+                                    <td class="item-note"></td>
+                                </tr>
+                                <tr class="controls">
+                                    <td class="item-label"></td>
+                                    <td>
+                                        <div class="form-item cf">
+                                            <button class="btn submit-btn ajax-post" id="submit" type="submit" target-form="form-horizontal">{:L('Submit')}</button>
+                                            <a class="btn btn-return" href="{:U('Config/depositport')}">{:L('Return')}</a>
+                                            <notempty name="data.id"><input type="hidden" name="id" value="{$data.id}"/></notempty>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </form>
+                <script type="text/javascript">
+                    $('#submit').click(function () {
+                        $('#form').submit();
+                    });
+                </script>
+            </div>
+        </div>
+    </div>
+</div>
+<include file="Public:footer"/>
+<block name="script">
+    <script type="text/javascript" charset="utf-8">
+        highlight_subnav("{:U('Config/depositport')}");
+    </script>
+</block>

@@ -1,0 +1,126 @@
+<include file="Public:header"/>
+<div id="main-content">
+	<div id="top-alert" class="fixed alert alert-error" style="display: none;">
+		<button class="close fixed" style="margin-top: 4px;">&times;</button>
+		<div class="alert-content">Nội dung cảnh báo</div>
+	</div>
+	<div id="main" class="main">
+		<div class="main-title-h">
+			<span class="h1-title"><a href="{:U('Config/daohang')}">Quản lý định hướng frontend</a> >></span>
+            <span class="h1-title"><empty name="data">Thêm mới định hướng<else/>Chỉnh sửa định hướng</empty></span>
+		</div>
+		<div class="tab-wrap">
+			<div class="tab-content">
+				<form id="form" action="{:U('Config/daohangEdit')}" method="post" class="form-horizontal" enctype="multipart/form-data">
+					<div id="tab" class="tab-pane in tab">
+						<div class="form-item cf">
+							<table>
+								<tr class="controls">
+									<td class="item-label">Ngôn ngữ :</td>
+									<td>
+										<select name="lang" class="form-control input-10x">
+											<volist name="__LANG__" id="v">
+												<option value="{$key}"
+												<eq name="data['lang']" value="$key">selected</eq>
+												>{$v}</option>
+											</volist>
+										</select></td>
+									<td class="item-note"></td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">Tên liên kết :</td>
+									<td><input type="text" class="form-control input-10x" name="name" value="{$data.name}"></td>
+									<td class="item-note"></td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">Tiêu đề liên kết :</td>
+									<td><input type="text" class="form-control input-10x" name="title" value="{$data.title}"></td>
+									<td class="item-note"></td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">Địa chỉ liên kết :</td>
+									<td><input type="text" class="form-control input-10x" name="url" value="{$data.url}">
+									</td>
+									<td class="item-note"></td>
+								</tr>
+
+								<tr class="controls">
+									<td class="item-label">Yêu cầu đăng nhập :</td>
+									<td>
+										<select name="get_login" class="form-control input-10x">
+											<option value="0"
+											<eq name="data.get_login" value="0">selected</eq>
+											>Không yêu cầu</option>
+											<option value="1"
+											<eq name="data.get_login" value="1">selected</eq>
+											>Yêu cầu đăng nhập</option>
+										</select>
+									</td>
+									<td class="item-note"></td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">Cho phép truy cập :</td>
+									<td><select name="access" class="form-control input-10x">
+										<option value="0"
+										<eq name="data.access" value="0">selected</eq>
+										>Mở</option>
+										<option value="1"
+										<eq name="data.access" value="1">selected</eq>
+										>Không mở</option>
+									</select></td>
+									<td class="item-note"></td>
+								</tr>
+								
+								<tr class="controls">
+									<td class="item-label">Sắp xếp :</td>
+									<td><input type="text" class="form-control input-10x" name="sort" value="{$data.sort}">
+									</td>
+									<td class="item-note"></td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">Trạng thái :</td>
+									<td><select name="status" class="form-control input-10x">
+										<option value="1"
+										<eq name="data.status" value="1">selected</eq>
+										>Hiển thị</option>
+										<option value="0"
+										<eq name="data.status" value="0">selected</eq>
+										>Ẩn</option>
+									</select></td>
+									<td class="item-note"></td>
+								</tr>
+								
+								<tr class="controls">
+									<td class="item-label"></td>
+									<td>
+										<div class="form-item cf">
+											<button class="btn submit-btn ajax-post" id="submit" type="submit" target-form="form-horizontal">Gửi
+											</button>
+											<a class="btn btn-return" href="{$Think.server.HTTP_REFERER}">Trở lại</a>
+											<notempty name="data.id"><input type="hidden" name="id" value="{$data.id}"/>
+											</notempty>
+										</div>
+									</td>
+								</tr>
+							</table>
+						</div>
+					</div>
+				</form>
+				<script type="text/javascript">
+					// Gửi form
+					$('#submit').click(function () {
+						$('#form').submit();
+					});
+				</script>
+			</div>
+		</div>
+	</div>
+</div>
+<include file="Public:footer"/>
+<block name="script">
+	<script type="text/javascript" charset="utf-8">
+		// Đánh dấu điều hướng
+		highlight_subnav("{:U('Config/daohang')}");
+		$('title').html('Điều hướng cấu hình '+'__WEBTITLE__');
+	</script>
+</block>

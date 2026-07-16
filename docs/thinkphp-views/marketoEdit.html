@@ -1,0 +1,241 @@
+<include file="Public:header"/>
+<div id="main-content">
+	<div id="top-alert" class="fixed alert alert-error" style="display: none;">
+		<button class="close fixed" style="margin-top: 4px;">×</button>
+		<div class="alert-content">{:L('Alert content')}</div>
+	</div>
+	<div id="main" class="main">
+		<div class="main-title-h">
+			<span class="h1-title"><a href="{:U('Config/marketo')}">{:L('Market list')}</a> >></span>
+            <span class="h1-title"><empty name="data">{:L('Add new market')}<else/>{:L('Edit market')}</empty></span>
+		</div>
+		<div class="tab-wrap">
+			<div class="tab-content">
+				<form id="form" action="{:U('Config/marketoEdit')}" method="post" class="form-horizontal" enctype="multipart/form-data">
+					<div id="tab" class="tab-pane in tab">
+						<div class="form-item cf">
+							<table>
+	
+								<tr class="controls">
+									<td class="item-label">{:L('Current trading pair')} :</td>
+									<td>{$data.name}</td>
+									<td class="item-note"></td>
+								</tr>
+								
+
+								<tr class="controls">
+									<td class="item-label">{:L('Trading price decimals')}:</td>
+									<td>
+                                        <empty name="data['round_mum']">
+											<input type="text" class="form-control input-10x" name="round_mum" value="2">
+										<else />
+											<input type="text" class="form-control input-10x" name="round_mum" value="{$data.round_mum}">
+                                        </empty>
+									</td>
+									<td class="item-note" style="color:red;">{:L('Enter integer 1 to 6 for decimals')}</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Trading quantity decimals')}:</td>
+									<td>
+                                        <empty name="data['round']">
+											<input type="text" class="form-control input-10x" name="round" value="4">
+										<else />
+											<input type="text" class="form-control input-10x" name="round" value="{$data.round}">
+                                        </empty>
+									</td>
+									<td class="item-note" style="color:red;">{:L('Enter integer 1 to 6 for decimals')}</td>
+								</tr>
+
+
+								<tr class="controls">
+									<td class="item-label">{:L('Minimum buy price')}:</td>
+									<td>
+                                        <empty name="data['buy_min']">
+											<input type="text" class="form-control input-10x" name="buy_min" value="0.0001">
+										<else />
+											<input type="text" class="form-control input-10x" name="buy_min" value="{$data.buy_min}">
+                                        </empty>
+									</td>
+									<td class="item-note" style="color:red;">{:L('Minimum buy price default')}</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Maximum buy price')}:</td>
+									<td>
+                                        <empty name="data['buy_max']">
+											<input type="text" class="form-control input-10x" name="buy_max" value="10000000">
+										<else />
+											<input type="text" class="form-control input-10x" name="buy_max" value="{$data.buy_max}">
+                                        </empty>
+									</td>
+									<td class="item-note" style="color:red;">{:L('Maximum buy price default')}</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Minimum sell price')}:</td>
+									<td>
+                                        <empty name="data['sell_min']">
+											<input type="text" class="form-control input-10x" name="sell_min" value="0.0001">
+										<else />
+											<input type="text" class="form-control input-10x" name="sell_min" value="{$data.sell_min}">
+                                        </empty>
+									</td>
+									<td class="item-note" style="color:red;">{:L('Minimum sell price default')}</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Maximum sell price')}:</td>
+									<td>
+                                        <empty name="data['sell_max']">
+											<input type="text" class="form-control input-10x" name="sell_max" value="10000000">
+										<else />
+											<input type="text" class="form-control input-10x" name="sell_max" value="{$data.sell_max}">
+                                        </empty>
+									</td>
+									<td class="item-note" style="color:red;">{:L('Maximum sell price default')}</td>
+								</tr>
+								
+								<tr class="controls">
+									<td class="item-label">{:L('Minimum trading amount')}:</td>
+									<td>
+                                        <empty name="data['trade_min']">
+											<input type="text" class="form-control input-10x" name="trade_min" value="0.0001">
+										<else />
+											<input type="text" class="form-control input-10x" name="trade_min" value="{$data.trade_min}">
+                                        </empty>
+									</td>
+									<td class="item-note" style="color:red;">{:L('Minimum trading amount default')}</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Maximum trading amount')}:</td>
+									<td>
+                                        <empty name="data['trade_max']">
+											<input type="text" class="form-control input-10x" name="trade_max" value="10000000">
+										<else />
+											<input type="text" class="form-control input-10x" name="trade_max" value="{$data.trade_max}">
+                                        </empty>
+									</td>
+									<td class="item-note" style="color:red;">{:L('Maximum trading amount default')}</td>
+								</tr>
+
+								<tr class="controls">
+									<td class="item-label">{:L('Minimum buy quantity')}:</td>
+									<td>
+                                        <empty name="data['trade_buy_num_min']">
+											<input type="text" class="form-control input-10x" name="trade_buy_num_min" value="0.0001">
+										<else />
+											<input type="text" class="form-control input-10x" name="trade_buy_num_min" value="{$data.trade_buy_num_min}">
+                                        </empty>
+									</td>
+									<td class="item-note" style="color:red;">{:L('Minimum buy quantity default')}</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Maximum buy quantity')}:</td>
+									<td>
+                                        <empty name="data['trade_buy_num_max']">
+											<input type="text" class="form-control input-10x" name="trade_buy_num_max" value="10000000">
+										<else />
+											<input type="text" class="form-control input-10x" name="trade_buy_num_max" value="{$data.trade_buy_num_max}">
+                                        </empty>
+									</td>
+									<td class="item-note" style="color:red;">{:L('Maximum buy quantity default')}</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Minimum sell quantity')}:</td>
+									<td>
+                                        <empty name="data['trade_sell_num_min']">
+                                                <input type="text" class="form-control input-10x" name="trade_sell_num_min" value="0.0001">
+                                            <else />
+                                                <input type="text" class="form-control input-10x" name="trade_sell_num_min" value="{$data.trade_sell_num_min}">
+                                        </empty>
+									</td>
+									<td class="item-note" style="color:red;">{:L('Minimum sell quantity default')}</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Maximum sell quantity')}:</td>
+									<td>
+                                       <empty name="data['trade_sell_num_max']">
+											<input type="text" class="form-control input-10x" name="trade_sell_num_max" value="10000000">
+										<else />
+											<input type="text" class="form-control input-10x" name="trade_sell_num_max" value="{$data.trade_sell_num_max}">
+                                        </empty>
+									</td>
+									<td class="item-note" style="color:red;">{:L('Maximum sell quantity default')}</td>
+								</tr>
+
+								<tr class="controls">
+									<td class="item-label">{:L('Price increase limit')}:</td>
+									<td>
+										<input type="text" class="form-control input-10x" name="zhang" value="{$data.zhang}">
+									</td>
+									<td class="item-note" style="color:red;">{:L('Percentage based on previous day')}</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Price decrease limit')}:</td>
+									<td>
+										<input type="text" class="form-control input-10x" name="die" value="{$data.die}">
+									</td>
+									<td class="item-note" style="color:red;">{:L('Percentage based on previous day')}</td>
+								</tr>
+
+
+								<tr class="controls">
+									<td class="item-label">{:L('Enable trading')} :</td>
+									<td><select name="trade" class="form-control input-10x">
+										<option value="1"
+										<eq name="data.trade" value="1">selected</eq>
+										>{:L('Enable trading')}</option>
+										<option value="0"
+										<eq name="data.trade" value="0">selected</eq>
+										>{:L('Prohibit trading')}</option>
+									</select></td>
+									<td class="item-note"></td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Sort')}:</td>
+									<td>
+										<input type="text" class="form-control input-10x" name="sort" value="{$data.sort}">
+									</td>
+									<td class="item-note"></td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Status')} :</td>
+									<td><select name="status" class="form-control input-10x">
+										<option value="1"
+										<eq name="data.status" value="1">selected</eq>
+										>{:L('Available')}</option>
+										<option value="0"
+										<eq name="data.status" value="0">selected</eq>
+										>{:L('Disabled')}</option>
+									</select></td>
+									<td class="item-note"></td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label"></td>
+									<td>
+										<div class="form-item cf">
+											<button class="btn submit-btn ajax-post" id="submit" type="submit" target-form="form-horizontal">{:L('Submit')}</button>
+											<a class="btn btn-return" href="{$Think.server.HTTP_REFERER}">{:L('Go back')}</a>
+											<notempty name="data.id"><input type="hidden" name="id" value="{$data.id}"/>
+											</notempty>
+										</div>
+									</td>
+								</tr>
+							</table>
+						</div>
+					</div>
+				</form>
+				<script type="text/javascript">
+				// Gửi form
+				$('#submit').click(function () {
+					$('#form').submit();
+				});
+				</script>
+			</div>
+		</div>
+	</div>
+</div>
+<include file="Public:footer"/>
+<block name="script">
+	<script type="text/javascript" charset="utf-8">
+		// Đánh dấu điều hướng
+		highlight_subnav("{:U('Config/marketo')}");
+	</script>
+</block>

@@ -1,0 +1,112 @@
+<include file="Public:header"/>
+<div id="main-content">
+	<div id="top-alert" class="fixed alert alert-error" style="display: none;">
+		<button class="close fixed" style="margin-top: 4px;">×</button>
+		<div class="alert-content">{:L('Alert content')}</div>
+	</div>
+	<div id="main" class="main">
+		<div class="main-title-h">
+			<span class="h1-title"><a href="{:U('Config/marketo')}">{:L('Market list')}</a> >></span>
+            <span class="h1-title">{:L('Edit market')}</span>
+		</div>
+		<div class="tab-wrap">
+			<div class="tab-content">
+				<form id="form" action="{:U('Config/marketoEdit2')}" method="post" class="form-horizontal" enctype="multipart/form-data">
+					<div id="tab" class="tab-pane in tab">
+						<div class="form-item cf">
+							<table>
+								<tr class="controls">
+									<td class="item-label">{:L('Market name')} :</td>
+									<td>{$data.name}</td>
+									<td class="item-note"></td>
+								</tr>
+
+								<tr class="controls" style="border-bottom:1px solid #d0d0d0;">
+									<td class="item-label">{:L('Issue price')}:</td>
+									<td>
+                                        <input type="text" class="form-control input-10x" name="faxingjia" value="{$data.faxingjia}">
+									</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Latest trading price')}:</td>
+									<td>
+                                        <input type="text" class="form-control input-10x" name="new_price" value="{$data.new_price}">
+									</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Buy price 1')}:</td>
+									<td>
+                                        <input type="text" class="form-control input-10x" name="buy_price" value="{$data.buy_price}">
+									</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Sell price 1')}:</td>
+									<td>
+                                        <input type="text" class="form-control input-10x" name="sell_price" value="{$data.sell_price}">
+									</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Lowest price')}:</td>
+									<td>
+                                        <input type="text" class="form-control input-10x" name="min_price" value="{$data.min_price}">
+									</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Highest price')}:</td>
+									<td>
+                                        <input type="text" class="form-control input-10x" name="max_price" value="{$data.max_price}">
+									</td>
+								</tr>
+								<tr class="controls">
+									<td class="item-label">{:L('Trading volume')}:</td>
+									<td>
+                                        <input type="text" class="form-control input-10x" name="volume" value="{$data.volume}">
+									</td>
+								</tr>
+								
+								<tr class="controls" style="border-top:1px solid #d0d0d0;">
+									<td class="item-label">{:L('Change percentage')}:</td>
+									<td>
+                                        <input type="text" class="form-control input-10x" name="change" value="{$data.change}">
+									</td>
+								</tr>
+								
+								<tr class="controls" style="border-bottom:1px solid #d0d0d0;">
+									<td class="item-label">{:L('Previous day closing price')}:</td>
+									<td>
+                                        <input type="text" class="form-control input-10x" name="hou_price" value="{$data.hou_price}">
+									</td>
+								</tr>
+
+								<tr class="controls">
+									<td class="item-label"></td>
+									<td>
+										<div class="form-item cf">
+											<button class="btn submit-btn ajax-post" id="submit" type="submit" target-form="form-horizontal">{:L('Submit')}</button>
+											<a class="btn btn-return" href="{$Think.server.HTTP_REFERER}">{:L('Go back')}</a>
+											<notempty name="data.id"><input type="hidden" name="id" value="{$data.id}"/>
+											</notempty>
+										</div>
+									</td>
+								</tr>
+							</table>
+						</div>
+					</div>
+				</form>
+				<script type="text/javascript">
+				// Gửi form
+				$('#submit').click(function () {
+					$('#form').submit();
+				});
+				</script>
+			</div>
+		</div>
+	</div>
+</div>
+<include file="Public:footer"/>
+<block name="script">
+	<script type="text/javascript" charset="utf-8">
+		// Đánh dấu điều hướng
+		highlight_subnav("{:U('Config/marketo')}");
+	</script>
+</block>

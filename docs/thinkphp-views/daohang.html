@@ -1,0 +1,111 @@
+<include file="Public:header"/>
+<div id="main-content">
+    <div id="top-alert" class="fixed alert alert-error" style="display: none;">
+        <button class="close fixed" style="margin-top: 4px;">&times;</button>
+        <div class="alert-content">Nội dung cảnh báo</div>
+    </div>
+    <div id="main" class="main">
+        <div class="main-title-h">
+            <span class="h1-title">Quản lý định hướng frontend</span>
+        </div>
+
+        <div class="cf">
+            <div class="fl">
+                <a class="btn btn-success" href="{:U('Config/daohangEdit')}">Thêm mới</a>
+                <button class="btn ajax-post btn-info" url="{:U('Config/daohangStatus',array('type'=>'resume'))}" target-form="ids">Kích hoạt</button>
+                <button class="btn ajax-post btn-warning" url="{:U('Config/daohangStatus',array('type'=>'forbid'))}" target-form="ids">Tạm ngừng</button>
+                <button class="btn ajax-post confirm btn-danger" url="{:U('Config/daohangStatus',array('type'=>'delete'))}" target-form="ids">Xóa</button>
+            </div>
+            <div class="search-form fr cf">
+                <div class="sleft">
+                    <form name="formSearch" id="formSearch" method="get" name="form1">
+                        <select style="width: 160px; float: left; margin-right: 10px;" name="status" class="form-control">
+                            <option value="" <empty name="Think.get.status">selected</empty> >Tất cả trạng thái</option>
+                            <option value="2" <eq name="Think.get.status" value="2">selected</eq> >Trạng thái hiển thị</option>
+                            <option value="1" <eq name="Think.get.status" value="1">selected</eq> >Trạng thái ẩn</option>  
+                        </select>
+                        <select style=" width: 160px; float: left; margin-right: 10px;" name="lang" class="form-control">
+                        	<option value="" <eq name="Think.get.lang">selected</eq> >Tất cả ngôn ngữ</option>
+                            <option value="vi-vn" <eq name="Think.get.lang" value="vi-vn">selected</eq> >Tiếng Việt</option>
+                            <option value="en-us" <eq name="Think.get.lang" value="en-us">selected</eq> >English</option>
+                        </select>
+                        <input type="text" name="name" class="search-input form-control  " value="{$Think.get.name}" placeholder="Nhập nội dung tìm kiếm" style="">
+                        <a class="sch-btn" href="javascript:;" id="search"> <i class="btn-search"></i> </a>
+                    </form>
+                    <script>
+                        //Chức năng tìm kiếm
+                        $(function () {
+                            $('#search').click(function () {
+                                $('#formSearch').submit();
+                            });
+                        });
+                        // Nhập để tìm kiếm
+                        $(".search-input").keyup(function (e) {
+                            if (e.keyCode === 13) {
+                                $("#search").click();
+                                return false;
+                            }
+                        });
+                    </script>
+                </div>
+            </div>
+        </div>
+        <div class="data-table table-striped">
+            <table class="">
+                <thead>
+                <tr>
+                    <th class="row-selected row-selected"><input class="check-all" type="checkbox"/></th>
+                    <th class="">ID</th>
+                    <th class="">Ngôn ngữ</th>
+                    <th class="">Tiêu đề liên kết</th>
+                    <th class="">Địa chỉ liên kết</th>
+                    <th class="">Thời gian thêm</th>
+                    <th class="">Yêu cầu đăng nhập</th>
+                    <th class="">Cho phép truy cập</th>
+                    <th class="">Sắp xếp</th>
+                    <th class="">Trạng thái</th>
+                    <th class="">Thao tác</th>
+                </tr>
+                </thead>
+                <tbody>
+                <notempty name="list">
+                    <volist name="list" id="vo">
+                        <tr>
+                            <td><input class="ids" type="checkbox" name="id[]" value="{$vo.id}"/></td>
+                            <td>{$vo.id}</td>
+                            <td>{$vo.lang}</td>
+                            <td>{$vo.title}</td>
+                            <td>{$vo.url}</td>                
+                            <td>{$vo.addtime|addtime}</td>
+							<td>
+								<eq name="vo.get_login" value="1"><b style="color: #10A017">Yêu cầu</b><else/><b style="color: #F70408">Không yêu cầu</b></eq>
+							</td>
+							<td>
+								<eq name="vo.access" value="1"><b style="color: #F70408">Không mở</b><else/><b style="color: #10A017">Mở</b></eq>
+							</td>
+							<td>{$vo.sort}</td>
+							<td>
+								<eq name="vo.status" value="1"><b style="color: #10A017">Hiển thị</b><else/><b style="color: #F70408">Ẩn</b></eq>
+							</td>
+                            <td><a href="{:U('Config/daohangEdit?id='.$vo['id'])}" class="btn btn-primary btn-xs">Chỉnh sửa</a></td>
+                        </tr>
+                    </volist>
+                    <else/>
+                    <td colspan="12" class="text-center empty-info"><i class="glyphicon glyphicon-exclamation-sign"></i>Không có dữ liệu</td>
+                </notempty>
+                </tbody>
+            </table>
+            <div class="page">
+                <div>{$page}</div>
+            </div>
+        </div>
+    </div>
+</div>
+<include file="Public:footer"/>
+<block name="script">
+    <script type="text/javascript" charset="utf-8">
+        // Đánh dấu điều hướng
+        highlight_subnav("{:U('Config/daohang')}");
+		$('title').html('Quản lý định hướng frontend-'+'__WEBTITLE__');
+    </script>
+</block>
