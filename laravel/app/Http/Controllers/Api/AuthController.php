@@ -10,6 +10,7 @@ use App\Models\UserCoin;
 use App\Models\UserLog;
 use App\Services\EmailOtpService;
 use App\Support\LocalePhoneCatalog;
+use App\Support\Totp;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -530,25 +531,34 @@ class AuthController extends Controller
             }
 
             if ($request->verify_type === 'google') {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Xác minh Google chưa được hỗ trợ',
-                ], 422);
-            }
+                if ((int) $user->google2fa_enabled !== 1 || empty($user->google2fa_secret)) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Google Authenticator chưa được bật',
+                    ], 422);
+                }
 
-            $email = strtolower(trim((string) $user->username));
-            if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Tài khoản chưa có email hợp lệ để xác minh',
-                ], 422);
-            }
+                if (!Totp::verify((string) $user->google2fa_secret, (string) $request->verification_code)) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Mã Google Authenticator không hợp lệ',
+                    ], 422);
+                }
+            } else {
+                $email = $this->resolveSecurityEmail($user);
+                if ($email === null) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Tài khoản chưa có email hợp lệ để xác minh',
+                    ], 422);
+                }
 
-            if (!$otp->verify($email, (string) $request->verification_code, EmailOtpService::PURPOSE_PAYPASSWORD)) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Mã xác minh không hợp lệ hoặc đã hết hạn',
-                ], 422);
+                if (!$otp->verify($email, (string) $request->verification_code, EmailOtpService::PURPOSE_PAYPASSWORD)) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Mã xác minh không hợp lệ hoặc đã hết hạn',
+                    ], 422);
+                }
             }
 
             $updated = $user->update([
@@ -557,7 +567,9 @@ class AuthController extends Controller
             ]);
 
             if ($updated) {
-                $otp->consume($email, EmailOtpService::PURPOSE_PAYPASSWORD);
+                if ($request->verify_type === 'email') {
+                    $otp->consume($this->resolveSecurityEmail($user) ?? '', EmailOtpService::PURPOSE_PAYPASSWORD);
+                }
 
                 return response()->json([
                     'status' => true,
@@ -582,9 +594,9 @@ class AuthController extends Controller
     {
         try {
             $user = JWTAuth::user();
-            $email = strtolower(trim((string) $user->username));
+            $email = $this->resolveSecurityEmail($user);
 
-            if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            if ($email === null) {
                 return response()->json([
                     'status' => false,
                     'message' => 'Tài khoản chưa có email hợp lệ để gửi mã',
@@ -676,5 +688,25 @@ class AuthController extends Controller
         } while (User::where('invit', $code)->exists());
 
         return $code;
+    }
+
+    protected function resolveSecurityEmail(?User $user): ?string
+    {
+        if (!$user) {
+            return null;
+        }
+
+        $securityEmail = strtolower(trim((string) ($user->security_email ?? '')));
+        if ($securityEmail !== '' && filter_var($securityEmail, FILTER_VALIDATE_EMAIL)
+            && (int) $user->security_email_verified === 1) {
+            return $securityEmail;
+        }
+
+        $username = strtolower(trim((string) $user->username));
+        if ($username !== '' && filter_var($username, FILTER_VALIDATE_EMAIL)) {
+            return $username;
+        }
+
+        return null;
     }
 }

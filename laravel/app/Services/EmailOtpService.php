@@ -13,6 +13,8 @@ class EmailOtpService
 
     public const PURPOSE_PAYPASSWORD = 'paypassword';
 
+    public const PURPOSE_EMAIL_BIND = 'email_bind';
+
     private const TTL_SECONDS = 300;
 
     private const COOLDOWN_SECONDS = 120;

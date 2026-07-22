@@ -46,6 +46,10 @@ class User extends Model implements AuthenticatableContract, JWTSubject
         'fullname',
         'username',
         'ui_locale',
+        'google2fa_secret',
+        'google2fa_enabled',
+        'security_email',
+        'security_email_verified',
         'cccd',
         'password',
         'paypassword',
@@ -93,6 +97,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
     protected $hidden = [
         'password',
         'paypassword',
+        'google2fa_secret',
     ];
 
     /**
