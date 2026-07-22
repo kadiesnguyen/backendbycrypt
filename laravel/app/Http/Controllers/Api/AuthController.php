@@ -31,6 +31,10 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $phoneCode = $request->input('phone_code');
+        $uiLocale = LocalePhoneCatalog::resolveUiLocale(
+            $request->input('locale'),
+            $phoneCode ? (string) $phoneCode : null
+        );
 
         // Validate request
         $validator = Validator::make($request->all(), [
@@ -45,10 +49,12 @@ class AuthController extends Controller
                 },
             ],
             'password' => 'required|string|min:6',
-            'paypassword' => 'required|string|min:6',
-            // 'verification_code' => 'nullable|string|size:6',
-            'invit' => 'required|string|size:6',
+            'paypassword' => 'nullable|string|min:6',
+            'Repassword' => 'nullable|string|same:password',
+            'verification_code' => 'nullable|string|size:6',
+            'invit' => 'nullable|string|size:6',
             'phone_code' => 'nullable|string|max:4',
+            'locale' => 'nullable|string|max:8',
         ]);
 
         if ($validator->fails()) {
@@ -80,23 +86,23 @@ class AuthController extends Controller
             }
 
             $invitCode = trim($request->invit ?? '');
+            if ($invitCode === '') {
+                $invitCode = '999999';
+            }
             $otp = app(EmailOtpService::class);
+            $rawIdentifier = trim((string) $request->email);
+            $isEmailSignup = filter_var($rawIdentifier, FILTER_VALIDATE_EMAIL) !== false;
 
-            $skipVerification = true; // Mặc định bỏ qua verification
-
-            if ($invitCode && $invitCode !== '999999' && $invitCode !== '0') {
-                $inv_user = User::where('invit', $invitCode)->exists();
-                if ($inv_user) {
-                    $skipVerification = true;        // invit hợp lệ → bỏ qua verification
-                }
+            $hasValidReferral = false;
+            if ($invitCode !== '999999' && $invitCode !== '0') {
+                $hasValidReferral = User::where('invit', $invitCode)->exists();
             }
 
-            // Nếu không bỏ qua thì mới check verification_code
-            if (!$skipVerification) {
+            if ($isEmailSignup && !$hasValidReferral) {
                 if (!$request->verification_code) {
                     return response()->json([
                         'status' => false,
-                        'message' => 'Vui lòng nhập mã xác minh',
+                        'message' => 'Vui lòng nhập mã xác minh email',
                     ], 422);
                 }
 
@@ -109,6 +115,10 @@ class AuthController extends Controller
 
                 $otp->consume($email, EmailOtpService::PURPOSE_REGISTER);
             }
+
+            $paypassword = $request->filled('paypassword')
+                ? (string) $request->paypassword
+                : (string) $request->password;
 
             // ====================== XỬ LÝ REFERRAL ======================
             $invit_1 = 0;
@@ -152,12 +162,13 @@ class AuthController extends Controller
             }
 
             // Start database transaction
-            $user = DB::transaction(function () use ($request, $email, $tymoney, $myinvit, $invit_1, $invit_2, $invit_3, $path, $ip, $city) {
+            $user = DB::transaction(function () use ($request, $email, $tymoney, $myinvit, $invit_1, $invit_2, $invit_3, $path, $ip, $city, $paypassword, $uiLocale) {
                 // Create user
                 $user = User::create([
                     'username' => $email,
+                    'ui_locale' => $uiLocale,
                     'password' => $request->password,
-                    'paypassword' => $request->paypassword,
+                    'paypassword' => $paypassword,
                     'money' => $tymoney,
                     'invit' => $myinvit,
                     'invit_1' => $invit_1,
@@ -211,6 +222,7 @@ class AuthController extends Controller
                 'data' => [
                     'id' => $user->id,
                     'username' => $user->username,
+                    'ui_locale' => $user->ui_locale ?? $uiLocale,
                 ],
                 'token' => $token,
             ], 201);
@@ -248,6 +260,7 @@ class AuthController extends Controller
             ],
             'password' => 'required|string|min:6',
             'phone_code' => 'nullable|string|max:4',
+            'locale' => 'nullable|string|max:8',
         ]);
 
         if ($validator->fails()) {
@@ -316,12 +329,23 @@ class AuthController extends Controller
             ]);
 
             // Update login message
+            $loginLocale = LocalePhoneCatalog::resolveUiLocale(
+                $request->input('locale'),
+                $phoneCode ? (string) $phoneCode : null
+            );
+            if ($request->filled('locale') || $request->filled('phone_code')) {
+                $user->ui_locale = $loginLocale;
+            }
+
             $user->update([
                 'lgtime' => now()->toDateString(),
                 'loginip' => $ip,
                 'loginaddr' => $city,
                 'logintime' => now()->toDateTimeString(),
+                'ui_locale' => $user->ui_locale,
             ]);
+
+            $resolvedLocale = LocalePhoneCatalog::normalizeUiLocale($user->ui_locale);
 
             return response()->json([
                 'status' => true,
@@ -329,6 +353,7 @@ class AuthController extends Controller
                 'data' => [
                     'id' => $user->id,
                     'username' => $user->username,
+                    'ui_locale' => $resolvedLocale,
                 ],
                 'token' => $token,
             ], 200);

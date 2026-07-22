@@ -45,6 +45,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
         'img_loan',
         'fullname',
         'username',
+        'ui_locale',
         'cccd',
         'password',
         'paypassword',

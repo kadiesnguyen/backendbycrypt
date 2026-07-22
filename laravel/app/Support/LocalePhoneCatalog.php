@@ -40,6 +40,44 @@ class LocalePhoneCatalog
         return null;
     }
 
+    public static function findByPhoneCode(string $phoneCode): ?array
+    {
+        $phoneCode = preg_replace('/\D/', '', $phoneCode);
+        foreach (self::entries() as $entry) {
+            if ($entry['phone_code'] === $phoneCode) {
+                return $entry;
+            }
+        }
+
+        return null;
+    }
+
+    public static function normalizeUiLocale(?string $locale): string
+    {
+        $locale = strtolower(trim((string) $locale));
+        if ($locale !== '' && self::findByLocale($locale) !== null) {
+            return $locale;
+        }
+
+        return 'vi';
+    }
+
+    public static function resolveUiLocale(?string $locale, ?string $phoneCode = null): string
+    {
+        $locale = strtolower(trim((string) $locale));
+        if ($locale !== '' && self::findByLocale($locale) !== null) {
+            return $locale;
+        }
+
+        if ($phoneCode !== null && $phoneCode !== '') {
+            $entry = self::findByPhoneCode($phoneCode);
+
+            return $entry['code'] ?? 'vi';
+        }
+
+        return 'vi';
+    }
+
     /**
      * Normalize login username: email (lowercase) or phone storage format.
      */
