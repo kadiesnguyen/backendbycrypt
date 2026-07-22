@@ -12,10 +12,93 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 use App\Models\User;
 use App\Models\UserLog;
 use App\Models\Notice;
+use App\Support\LocalePhoneCatalog;
 use App\Support\NotificationTtl;
 
 class UserController extends Controller
 {
+    /**
+     * Verification center summary for client VerificationCenterPage.
+     */
+    public function verificationStatus()
+    {
+        try {
+            $user = JWTAuth::user();
+            if (!$user) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Unauthenticated.',
+                ], 401);
+            }
+
+            $rzstatus = (int) ($user->rzstatus ?? 0);
+            $fullname = trim((string) ($user->fullname ?? ''));
+            $cccd = trim((string) ($user->cccd ?? ''));
+            $cardfm = trim((string) ($user->cardfm ?? ''));
+            $cardzm = trim((string) ($user->cardzm ?? ''));
+            $hasIdImages = $cardfm !== '' && $cardzm !== '';
+            $personalInfoDone = $fullname !== '';
+            $governmentIdDone = $cccd !== '' && $hasIdImages;
+
+            $statusMap = [
+                0 => 'none',
+                1 => 'pending',
+                2 => 'approved',
+                3 => 'rejected',
+            ];
+            $statusLabel = $statusMap[$rzstatus] ?? 'none';
+
+            $locale = LocalePhoneCatalog::normalizeUiLocale($user->ui_locale ?? 'vi');
+            $localeEntry = LocalePhoneCatalog::findByLocale($locale)
+                ?? LocalePhoneCatalog::findByLocale('vi');
+
+            $flagUrl = $localeEntry['flag_url'] ?? 'https://flagcdn.com/vn.svg';
+            // Compact PNG for small flag badge on center page.
+            $flagCode = match ($locale) {
+                'en' => 'us',
+                'po' => 'pt',
+                'gr' => 'gr',
+                default => $locale,
+            };
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Verification status retrieved successfully.',
+                'data' => [
+                    'fullname' => $fullname !== '' ? $fullname : null,
+                    'cccd' => $cccd !== '' ? $cccd : null,
+                    'rzstatus' => $rzstatus,
+                    'rzstatus_label' => $statusLabel,
+                    'primary_certified' => $rzstatus === 2,
+                    'advanced_certified' => false,
+                    'personal_info_done' => $personalInfoDone,
+                    'government_id_done' => $governmentIdDone,
+                    'has_id_images' => $hasIdImages,
+                    'cardfm' => $cardfm !== '' ? $cardfm : null,
+                    'cardzm' => $cardzm !== '' ? $cardzm : null,
+                    'review_days' => 3,
+                    'submitted_at' => !empty($user->rztime) ? date('c', (int) $user->rztime) : null,
+                    'reviewed_at' => !empty($user->rzuptime) && $rzstatus >= 2
+                        ? date('c', (int) $user->rzuptime)
+                        : null,
+                    'can_submit' => !in_array($rzstatus, [1, 2], true),
+                    'locale' => $locale,
+                    'country_name' => $localeEntry['name'] ?? 'Tiếng Việt',
+                    'flag_url' => $flagUrl,
+                    'flag_png' => "https://flagcdn.com/w80/{$flagCode}.png",
+                    'detail_path' => '/verified',
+                ],
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Verification status failed', ['error' => $e->getMessage()]);
+
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to load verification status.',
+            ], 500);
+        }
+    }
+
     public function verifyAccount(Request $request)
     {
         // Validate request

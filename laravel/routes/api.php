@@ -63,6 +63,7 @@ Route::middleware(['auth:api', 'check.user.status'])->group(function () {
     Route::post('change-password', [AuthController::class, 'changePassword']);
     Route::post('change-paypassword', [AuthController::class, 'changePayPassword']);
     Route::post('send-paypassword-code', [AuthController::class, 'sendPaypasswordCode']);
+    Route::get('verification', [UserController::class, 'verificationStatus']);
     Route::post('verify-account', [UserController::class, 'verifyAccount']);
     Route::post('update-profile', [UserController::class, 'updateProfile']);
     Route::post('update-bank', [UserController::class, 'updateUserBankInfo']);
