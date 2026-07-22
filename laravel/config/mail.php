@@ -115,4 +115,6 @@ return [
         'name' => env('MAIL_FROM_NAME', 'Example'),
     ],
 
+    'otp_subject' => env('MAIL_OTP_SUBJECT', 'Mã xác thực Bycrypt'),
+
 ];

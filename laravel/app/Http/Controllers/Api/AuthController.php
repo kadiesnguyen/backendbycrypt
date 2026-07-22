@@ -8,15 +8,13 @@ use App\Models\Config;
 use App\Models\User;
 use App\Models\UserCoin;
 use App\Models\UserLog;
+use App\Services\EmailOtpService;
 use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Validator;
+use RuntimeException;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Stevebauman\Location\Facades\Location;
@@ -62,8 +60,8 @@ class AuthController extends Controller
 
         try {
             $email = strtolower(trim($request->email));
-            $cacheKey = 'email_verify_code:' . sha1($email);
             $invitCode = trim($request->invit ?? '');
+            $otp = app(EmailOtpService::class);
 
             $skipVerification = true; // Mặc định bỏ qua verification
 
@@ -83,15 +81,14 @@ class AuthController extends Controller
                     ], 422);
                 }
 
-                $verificationData = Cache::get($cacheKey);
-
-                if (!$verificationData || !isset($verificationData['code']) || 
-                    $verificationData['code'] !== trim($request->verification_code)) {
+                if (!$otp->verify($email, (string) $request->verification_code, EmailOtpService::PURPOSE_REGISTER)) {
                     return response()->json([
                         'status' => false,
                         'message' => 'Mã xác minh không hợp lệ hoặc đã hết hạn',
                     ], 422);
                 }
+
+                $otp->consume($email, EmailOtpService::PURPOSE_REGISTER);
             }
 
             // ====================== XỬ LÝ REFERRAL ======================
@@ -188,7 +185,6 @@ class AuthController extends Controller
 
             // Generate JWT token
             $token = JWTAuth::fromUser($user);
-            Cache::forget($cacheKey);
 
             return response()->json([
                 'status' => true,
@@ -457,23 +453,17 @@ class AuthController extends Controller
         }
     }
 
-    public function changePayPassword(Request $request)
+    public function changePayPassword(Request $request, EmailOtpService $otp)
     {
         try {
-            // Validate request based on wdstatus
-            $rules = [
-                'paypassword' => 'required|string|min:6|max:32',
-                'confirm_paypassword' => 'required|string|same:paypassword',
-            ];
-
             $user = JWTAuth::user();
 
-            if ($user->wdstatus == 1) {
-                // User has paypassword, require current_paypassword
-                $rules['current_paypassword'] = 'required|string';
-            }
-
-            $validator = Validator::make($request->all(), $rules);
+            $validator = Validator::make($request->all(), [
+                'paypassword' => ['required', 'string', 'regex:/^\d{6}$/'],
+                'confirm_paypassword' => 'required|string|same:paypassword',
+                'verification_code' => 'required|string|size:6',
+                'verify_type' => 'required|string|in:email,google',
+            ]);
 
             if ($validator->fails()) {
                 return response()->json([
@@ -482,25 +472,36 @@ class AuthController extends Controller
                 ], 422);
             }
 
-            // Verify current paypassword if wdstatus = 1
-            if ($user->wdstatus == 1 && !$user->verifyPaypassword($request->current_paypassword)) {
+            if ($request->verify_type === 'google') {
                 return response()->json([
                     'status' => false,
-                    'message' => 'Mật khẩu thanh toán không đúng',
+                    'message' => 'Xác minh Google chưa được hỗ trợ',
                 ], 422);
             }
 
-            if ($user->wdstatus == 1) {
-                $user->repairPaypasswordIfLegacy($request->current_paypassword);
+            $email = strtolower(trim((string) $user->username));
+            if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Tài khoản chưa có email hợp lệ để xác minh',
+                ], 422);
             }
 
-            // Update paypassword and wdstatus
+            if (!$otp->verify($email, (string) $request->verification_code, EmailOtpService::PURPOSE_PAYPASSWORD)) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Mã xác minh không hợp lệ hoặc đã hết hạn',
+                ], 422);
+            }
+
             $updated = $user->update([
                 'paypassword' => $request->paypassword,
                 'wdstatus' => 1,
             ]);
 
             if ($updated) {
+                $otp->consume($email, EmailOtpService::PURPOSE_PAYPASSWORD);
+
                 return response()->json([
                     'status' => true,
                     'message' => 'Cập nhật mật khẩu thanh toán thành công',
@@ -520,7 +521,51 @@ class AuthController extends Controller
         }
     }
 
-    public function sendVerificationCode(Request $request)
+    public function sendPaypasswordCode(Request $request, EmailOtpService $otp)
+    {
+        try {
+            $user = JWTAuth::user();
+            $email = strtolower(trim((string) $user->username));
+
+            if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Tài khoản chưa có email hợp lệ để gửi mã',
+                ], 422);
+            }
+
+            $result = $otp->send($email, EmailOtpService::PURPOSE_PAYPASSWORD, (string) $request->ip());
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Mã xác minh đã được gửi thành công',
+                'data' => [
+                    'email' => $email,
+                    'expires_in' => $result['expires_in'],
+                ],
+            ], 200);
+        } catch (RuntimeException $e) {
+            $status = str_contains($e->getMessage(), 'đợi') || str_contains($e->getMessage(), 'Quá nhiều')
+                ? 429
+                : 422;
+
+            return response()->json([
+                'status' => false,
+                'message' => $e->getMessage(),
+            ], $status);
+        } catch (Exception $e) {
+            Log::error('Send paypassword verification code failed', [
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'status' => false,
+                'message' => 'Lỗi khi gửi mã xác minh, vui lòng thử lại sau',
+            ], 500);
+        }
+    }
+
+    public function sendVerificationCode(Request $request, EmailOtpService $otp)
     {
         $validator = Validator::make($request->all(), [
             'email' => 'required|string|email|max:255|unique:tw_user,username',
@@ -535,52 +580,25 @@ class AuthController extends Controller
 
         try {
             $email = strtolower(trim($request->email));
-
-            $cooldownKey = 'email_verify_cooldown:' . sha1($email);
-            if (Cache::has($cooldownKey)) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Vui lòng đợi 120 giây trước khi yêu cầu mã khác',
-                ], 429);
-            }
-
-            $ipLimiterKey = 'email_verify:ip:' . $request->ip();
-            $emailLimiterKey = 'email_verify:email:' . sha1($email);
-
-            if (RateLimiter::tooManyAttempts($ipLimiterKey, 10) || RateLimiter::tooManyAttempts($emailLimiterKey, 5)) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Quá nhiều yêu cầu, vui lòng thử lại sau',
-                ], 429);
-            }
-
-            RateLimiter::hit($ipLimiterKey, 3600);
-            RateLimiter::hit($emailLimiterKey, 3600);
-
-            $code = (string) random_int(100000, 999999);
-            $ttlSeconds = 300;
-
-            Cache::put('email_verify_code:' . sha1($email), [
-                'code' => $code,
-                'email' => $email,
-                'sent_at' => now()->timestamp,
-            ], now()->addSeconds($ttlSeconds));
-
-            Cache::put($cooldownKey, true, now()->addSeconds(120));
-
-            Mail::raw("Your verification code is: {$code}. This code will expire in 5 minutes.", function ($message) use ($email) {
-                $message->to($email)
-                    ->subject('Your verification code');
-            });
+            $result = $otp->send($email, EmailOtpService::PURPOSE_REGISTER, (string) $request->ip());
 
             return response()->json([
                 'status' => true,
                 'message' => 'Mã xác minh đã được gửi thành công',
                 'data' => [
                     'email' => $email,
-                    'expires_in' => $ttlSeconds,
+                    'expires_in' => $result['expires_in'],
                 ],
             ], 200);
+        } catch (RuntimeException $e) {
+            $status = str_contains($e->getMessage(), 'đợi') || str_contains($e->getMessage(), 'Quá nhiều')
+                ? 429
+                : 422;
+
+            return response()->json([
+                'status' => false,
+                'message' => $e->getMessage(),
+            ], $status);
         } catch (Exception $e) {
             Log::error('Send verification code failed', [
                 'email' => $request->email,
