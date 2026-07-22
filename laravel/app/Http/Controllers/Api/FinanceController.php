@@ -13,9 +13,10 @@ use App\Models\Recharge;
 use App\Models\RechargeMethod;
 use App\Models\UserCoin;
 use App\Models\TransferHistory;
+use App\Services\BinanceTickerService;
 use DB;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -647,106 +648,46 @@ class FinanceController extends Controller
         }
     }
 
-    public function exchange(Request $request)
+    public function quote(Request $request, BinanceTickerService $ticker)
+    {
+        $resolved = $this->resolveExchangeQuote($request, $ticker, false);
+
+        if ($resolved instanceof JsonResponse) {
+            return $resolved;
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Lấy báo giá thành công',
+            'data' => [
+                'from' => $resolved['from'],
+                'to' => $resolved['to'],
+                'amount' => number_format($resolved['amount'], 8, '.', ''),
+                'received' => number_format($resolved['receive_amount'], 8, '.', ''),
+                'from_rate_usdt' => number_format($resolved['from_rate'], 8, '.', ''),
+                'to_rate_usdt' => number_format($resolved['to_rate'], 8, '.', ''),
+                'fee' => '0',
+            ],
+        ], 200);
+    }
+
+    public function exchange(Request $request, BinanceTickerService $ticker)
     {
         try {
-            $validator = Validator::make($request->all(), [
-                'from' => 'required|string|exists:tw_coin,name',
-                'to' => 'required|string|exists:tw_coin,name|different:from',
-                'amount' => 'required|numeric|gt:0',
-            ]);
+            $resolved = $this->resolveExchangeQuote($request, $ticker, true);
 
-            if ($validator->fails()) {
-                return response()->json([
-                    'status' => false,
-                    'message' => $validator->errors()->first(),
-                ], 422);
+            if ($resolved instanceof JsonResponse) {
+                return $resolved;
             }
 
-            $from = strtolower(trim($request->from));
-            $to = strtolower(trim($request->to));
-            $amount = (float) $request->amount;
-
-            if ($from !== 'usdt' && $to !== 'usdt') {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Hiện tại chỉ hỗ trợ đổi tiền qua USDT. Vui lòng chọn một trong hai đồng tiền là USDT.',
-                ], 422);
-            }
-
-            $user = JWTAuth::user();
-            $userCoin = UserCoin::where('userid', $user->id)->first();
-
-            if (!$userCoin) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Số dư tiền của người dùng không tồn tại',
-                ], 422);
-            }
-
-            if (!Schema::hasColumn('tw_user_coin', $from) || !Schema::hasColumn('tw_user_coin', $to)) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Cột số dư tiền không tồn tại',
-                ], 422);
-            }
-
-            $fromCoin = Coin::where('name', $from)->first();
-            $toCoin = Coin::where('name', $to)->first();
-
-            if (!$fromCoin || !$toCoin) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Đồng tiền không hợp lệ hoặc đã bị vô hiệu hóa.',
-                ], 422);
-            }
-
-            if ((float) ($userCoin->$from ?? 0) < $amount) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Số dư không đủ',
-                ], 422);
-            }
-
-            $tickerUrlTemplate = config('services.binance.ticker_url');
-
-            if (!$tickerUrlTemplate) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Nguồn tỷ giá đổi tiền không được cấu hình. Vui lòng liên hệ quản trị viên.',
-                ], 500);
-            }
-
-            $fetchRateToUsdt = function (string $coinName) use ($tickerUrlTemplate) {
-                if ($coinName === 'usdt') {
-                    return 1.0;
-                }
-
-                $symbol = strtoupper($coinName);
-                $url = str_replace('{symbol}', $symbol, $tickerUrlTemplate);
-                $response = Http::timeout(10)->get($url);
-
-                if (!$response->ok()) {
-                    return null;
-                }
-
-                $price = (float) $response->json('price');
-
-                return $price > 0 ? $price : null;
-            };
-
-            $fromRate = $fetchRateToUsdt($from);
-            $toRate = $fetchRateToUsdt($to);
-
-            if (!$fromRate || !$toRate) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Không thể lấy tỷ giá cho một hoặc cả hai đồng tiền. Vui lòng thử lại sau.',
-                ], 422);
-            }
-
-            $usdtAmount = $amount * $fromRate;
-            $receiveAmount = $usdtAmount / $toRate;
+            $user = $resolved['user'];
+            $from = $resolved['from'];
+            $to = $resolved['to'];
+            $amount = $resolved['amount'];
+            $fromRate = $resolved['from_rate'];
+            $toRate = $resolved['to_rate'];
+            $usdtAmount = $resolved['usdt_amount'];
+            $receiveAmount = $resolved['receive_amount'];
 
             DB::beginTransaction();
 
@@ -779,6 +720,7 @@ class FinanceController extends Controller
                     'to' => $to,
                     'amount' => number_format($amount, 8, '.', ''),
                     'received' => number_format($receiveAmount, 8, '.', ''),
+                    'fee' => '0',
                     'balance' => [
                         $from => number_format((float) ($updatedUserCoin->$from ?? 0), 8, '.', ''),
                         $to => number_format((float) ($updatedUserCoin->$to ?? 0), 8, '.', ''),
@@ -794,5 +736,103 @@ class FinanceController extends Controller
                 'message' => 'Đổi tiền thất bại. Vui lòng thử lại sau.',
             ], 500);
         }
+    }
+
+    /**
+     * @return array<string, mixed>|JsonResponse
+     */
+    private function resolveExchangeQuote(Request $request, BinanceTickerService $ticker, bool $requireBalance)
+    {
+        $validator = Validator::make($request->all(), [
+            'from' => 'required|string|exists:tw_coin,name',
+            'to' => 'required|string|exists:tw_coin,name|different:from',
+            'amount' => 'required|numeric|gt:0',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => $validator->errors()->first(),
+            ], 422);
+        }
+
+        $from = strtolower(trim((string) $request->from));
+        $to = strtolower(trim((string) $request->to));
+        $amount = (float) $request->amount;
+
+        if ($from !== 'usdt' && $to !== 'usdt') {
+            return response()->json([
+                'status' => false,
+                'message' => 'Hiện tại chỉ hỗ trợ đổi tiền qua USDT. Vui lòng chọn một trong hai đồng tiền là USDT.',
+            ], 422);
+        }
+
+        if (!Schema::hasColumn('tw_user_coin', $from) || !Schema::hasColumn('tw_user_coin', $to)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Cột số dư tiền không tồn tại',
+            ], 422);
+        }
+
+        $fromCoin = Coin::where('name', $from)->where('status', 1)->first();
+        $toCoin = Coin::where('name', $to)->where('status', 1)->first();
+
+        if (!$fromCoin || !$toCoin) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Đồng tiền không hợp lệ hoặc đã bị vô hiệu hóa.',
+            ], 422);
+        }
+
+        $user = JWTAuth::user();
+
+        if ($requireBalance) {
+            $userCoin = UserCoin::where('userid', $user->id)->first();
+
+            if (!$userCoin) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Số dư tiền của người dùng không tồn tại',
+                ], 422);
+            }
+
+            if ((float) ($userCoin->$from ?? 0) < $amount) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Số dư không đủ',
+                ], 422);
+            }
+        }
+
+        if (!$ticker->isTickerConfigured()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Nguồn tỷ giá đổi tiền không được cấu hình. Vui lòng liên hệ quản trị viên.',
+            ], 500);
+        }
+
+        $fromRate = $ticker->rateToUsdt($from);
+        $toRate = $ticker->rateToUsdt($to);
+
+        if (!$fromRate || !$toRate) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Không thể lấy tỷ giá cho một hoặc cả hai đồng tiền. Vui lòng thử lại sau.',
+            ], 422);
+        }
+
+        $usdtAmount = $amount * $fromRate;
+        $receiveAmount = BinanceTickerService::receiveAmount($amount, $fromRate, $toRate);
+
+        return [
+            'user' => $user,
+            'from' => $from,
+            'to' => $to,
+            'amount' => $amount,
+            'from_rate' => $fromRate,
+            'to_rate' => $toRate,
+            'usdt_amount' => $usdtAmount,
+            'receive_amount' => $receiveAmount,
+        ];
     }
 }

@@ -92,6 +92,7 @@ Route::middleware(['auth:api', 'check.user.status'])->group(function () {
     Route::post('subscribe', [IssueController::class, 'subscribeIssue']);
   });
   Route::group(['prefix' => 'finance'], function () {
+    Route::post('/exchange/quote', [FinanceController::class, 'quote']);
     Route::post('/exchange', [FinanceController::class, 'exchange']);
     Route::group(['prefix' => 'deposit'], function () {
       Route::get('history', [FinanceController::class, 'depositHistory']);
