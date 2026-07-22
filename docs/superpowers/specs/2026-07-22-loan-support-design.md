@@ -17,7 +17,7 @@ Wire the existing client screens **Vay hỗ trợ** and **Lịch sử vay** to r
 | Amount | User enters within admin min–max; other terms from config |
 | Concurrency | At most one loan in `pending` / `active` / `overdue` |
 | Eligibility | KYC approved (`rzstatus === 2`) required; form still uploads 2 images |
-| Architecture | Dedicated `loans` table + settings + scheduled settle command |
+| Architecture | Dedicated `tw_loan` + `tw_loan_setting` + scheduled settle command |
 
 ## Out of scope
 
@@ -28,12 +28,12 @@ Wire the existing client screens **Vay hỗ trợ** and **Lịch sử vay** to r
 
 ## Data model
 
-### Table `loans`
+### Table `tw_loan`
 
 | Column | Type | Notes |
 |---|---|---|
 | `id` | bigint PK | |
-| `user_id` | bigint | FK logic to `tw_user.id` |
+| `user_id` | unsigned int | matches `tw_user.id` |
 | `username` | string | denormalized for admin list |
 | `amount` | decimal | principal USDT |
 | `duration_days` | int | snapshot from settings |
@@ -52,7 +52,7 @@ Wire the existing client screens **Vay hỗ trợ** and **Lịch sử vay** to r
 
 Indexes: `(user_id, status)`, `(status, due_at)`.
 
-### Table `loan_settings` (singleton row id=1)
+### Table `tw_loan_setting` (singleton row id=1)
 
 | Column | Type | Default (seed) |
 |---|---|---|
@@ -80,7 +80,7 @@ Open statuses blocking a new application: `pending`, `active`, `overdue`.
 Reuse existing patterns from deposit/withdraw:
 
 - Wallet: `tw_user_coin.usdt`
-- Ledger: `Bill` rows with distinct `type` / `remark` for loan credit and loan repayment
+- Ledger: `Bill` type `18` (loan disbursement / credit), type `19` (loan repayment / debit); remarks include loan id
 - Notifications: `Notice` on approve, reject, repay success, overdue
 
 Approve (transaction):
@@ -136,7 +136,8 @@ Client history tabs map:
 ## Admin UI
 
 - Sidebar item **Vay hỗ trợ** near finance (deposits/withdrawals)
-- List page: username, amount, interest, repay, status, created, actions (approve/reject when pending), view images, edit note
+- List page: username, amount, interest, repay, status, created, actions (approve/reject when pending with optional note), view images
+- Note is write-once on approve/reject in v1 (no separate edit-note endpoint)
 - Settings page or section: min/max, days, daily rate, lender, enabled
 - i18n vi/en keys for nav + page copy
 
@@ -166,8 +167,8 @@ Client history tabs map:
 
 **Backend Laravel**
 
-- migration(s): `loans`, `loan_settings`
-- `app/Models/Loan.php`, `LoanSetting.php`
+- migration(s): `tw_loan`, `tw_loan_setting`
+- `app/Models/Loan.php`, `LoanSetting.php` (tables `tw_loan`, `tw_loan_setting`)
 - `app/Services/LoanService.php` (apply/approve/reject/settle)
 - `app/Http/Controllers/Api/LoanController.php`
 - `app/Http/Controllers/Admin/LoanController.php`, `LoanSettingController.php`
