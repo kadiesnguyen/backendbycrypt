@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Config;
+use App\Support\LocalePhoneCatalog;
 use Illuminate\Http\Request;
 
 class SettingController extends Controller
@@ -26,5 +27,25 @@ class SettingController extends Controller
                 'message' => $e->getMessage(),
             ]);
         }
+    }
+
+    /**
+     * Dial codes aligned with client UI locales (login/signup country picker).
+     */
+    public function localePhones(Request $request)
+    {
+        $locale = (string) $request->query('locale', 'vi');
+        $default = LocalePhoneCatalog::findByLocale($locale)
+            ?? LocalePhoneCatalog::findByLocale('vi')
+            ?? LocalePhoneCatalog::entries()[0];
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Locale phone list retrieved successfully.',
+            'data' => [
+                'locales' => LocalePhoneCatalog::entries(),
+                'default' => $default,
+            ],
+        ]);
     }
 }

@@ -24,6 +24,7 @@ Route::post('register', [AuthController::class, 'register']);
 Route::post('login', [AuthController::class, 'login']);
 Route::post('send-verification-code', [AuthController::class, 'sendVerificationCode']);
 Route::get('config', [SettingController::class, 'config']);
+Route::get('locale-phones', [SettingController::class, 'localePhones']);
 Route::group(['prefix' => 'orepool'], function () {
   Route::get('', [OrepoolController::class, 'index']);
   Route::get('info', [OrepoolController::class, 'getMiningMachineInfo']);

@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\UserCoin;
 use App\Models\UserLog;
 use App\Services\EmailOtpService;
+use App\Support\LocalePhoneCatalog;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -29,18 +30,17 @@ class AuthController extends Controller
      */
     public function register(Request $request)
     {
+        $phoneCode = $request->input('phone_code');
+
         // Validate request
         $validator = Validator::make($request->all(), [
             'email' => [
                 'required',
                 'string',
                 'max:255',
-                'unique:tw_user,username',
-                function ($attribute, $value, $fail) {
-                    // Kiểm tra là email hợp lệ HOẶC số điện thoại (bắt đầu bằng 0, đúng 10 số)
-                    if (!filter_var($value, FILTER_VALIDATE_EMAIL) && 
-                        !preg_match('/^0\d{9}$/', $value)) {
-                        $fail('Email phải là địa chỉ email hợp lệ hoặc số điện thoại 10 số bắt đầu bằng 0.');
+                function ($attribute, $value, $fail) use ($phoneCode) {
+                    if (!LocalePhoneCatalog::isValidLoginIdentifier((string) $value, $phoneCode ? (string) $phoneCode : null)) {
+                        $fail('Email phải là địa chỉ email hợp lệ hoặc số điện thoại hợp lệ.');
                     }
                 },
             ],
@@ -48,6 +48,7 @@ class AuthController extends Controller
             'paypassword' => 'required|string|min:6',
             // 'verification_code' => 'nullable|string|size:6',
             'invit' => 'required|string|size:6',
+            'phone_code' => 'nullable|string|max:4',
         ]);
 
         if ($validator->fails()) {
@@ -59,7 +60,25 @@ class AuthController extends Controller
         }
 
         try {
-            $email = strtolower(trim($request->email));
+            try {
+                $email = LocalePhoneCatalog::normalizeUsername(
+                    (string) $request->email,
+                    $phoneCode ? (string) $phoneCode : null
+                );
+            } catch (\InvalidArgumentException) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Email hoặc số điện thoại không hợp lệ.',
+                ], 422);
+            }
+
+            if (User::where('username', $email)->exists()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Email hoặc số điện thoại đã được sử dụng.',
+                ], 422);
+            }
+
             $invitCode = trim($request->invit ?? '');
             $otp = app(EmailOtpService::class);
 
@@ -213,21 +232,22 @@ class AuthController extends Controller
      */
     public function login(Request $request)
     {
+        $phoneCode = $request->input('phone_code');
+
         // Validate request
         $validator = Validator::make($request->all(), [
             'email' => [
                 'required',
                 'string',
                 'max:255',
-                function ($attribute, $value, $fail) {
-                    // Kiểm tra là email hợp lệ HOẶC số điện thoại (bắt đầu bằng 0, đúng 10 số)
-                    if (!filter_var($value, FILTER_VALIDATE_EMAIL) && 
-                        !preg_match('/^0\d{9}$/', $value)) {
-                        $fail('Phải là địa chỉ email hợp lệ hoặc số điện thoại 10 số bắt đầu bằng 0.');
+                function ($attribute, $value, $fail) use ($phoneCode) {
+                    if (!LocalePhoneCatalog::isValidLoginIdentifier((string) $value, $phoneCode ? (string) $phoneCode : null)) {
+                        $fail('Phải là địa chỉ email hợp lệ hoặc số điện thoại hợp lệ.');
                     }
                 },
             ],
             'password' => 'required|string|min:6',
+            'phone_code' => 'nullable|string|max:4',
         ]);
 
         if ($validator->fails()) {
@@ -239,8 +259,20 @@ class AuthController extends Controller
         }
 
         try {
+            try {
+                $username = LocalePhoneCatalog::normalizeUsername(
+                    (string) $request->email,
+                    $phoneCode ? (string) $phoneCode : null
+                );
+            } catch (\InvalidArgumentException) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Email hoặc số điện thoại không hợp lệ.',
+                ], 422);
+            }
+
             // Find user by username
-            $user = User::where('username', $request->email)->first();
+            $user = User::where('username', $username)->first();
 
             // Check if user exists and password matches
             if (!$user || !$user->verifyPassword($request->password)) {
