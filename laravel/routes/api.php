@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\IssueController;
 use App\Http\Controllers\Api\LoanController;
 use App\Http\Controllers\Api\NewsController;
 use App\Http\Controllers\Api\OrepoolController;
+use App\Http\Controllers\Api\PerpController;
 use App\Http\Controllers\Api\SettingController;
 use App\Http\Controllers\Api\TradeController;
 use App\Http\Controllers\Api\UserController;
@@ -42,6 +43,9 @@ Route::group(['prefix' => 'finance'], function () {
 Route::group(['prefix' => 'news'], function () {
   Route::get('list', [NewsController::class, 'list']);
   Route::get('{id}', [NewsController::class, 'detail']);
+});
+Route::group(['prefix' => 'perp'], function () {
+  Route::get('settings', [PerpController::class, 'settings']);
 });
 
 // Protected routes
@@ -110,6 +114,7 @@ Route::middleware(['auth:api', 'check.user.status'])->group(function () {
     Route::group(['prefix' => 'balance'], function () {
       Route::get('/', [FinanceController::class, 'balance']);
     });
+    Route::get('/stats', [FinanceController::class, 'stats']);
     Route::group(['prefix' => 'loan'], function () {
       Route::get('config', [LoanController::class, 'config']);
       Route::post('/', [LoanController::class, 'store']);
@@ -120,5 +125,12 @@ Route::middleware(['auth:api', 'check.user.status'])->group(function () {
   Route::group(['prefix' => 'checkin'], function () {
     Route::post('/', [CheckinController::class, 'checkin']);
     Route::get('/history', [CheckinController::class, 'history']);
+  });
+  Route::group(['prefix' => 'perp'], function () {
+    Route::get('balance', [PerpController::class, 'balance']);
+    Route::get('positions', [PerpController::class, 'positions']);
+    Route::get('history', [PerpController::class, 'history']);
+    Route::post('order', [PerpController::class, 'order']);
+    Route::post('close', [PerpController::class, 'close']);
   });
 });

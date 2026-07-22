@@ -9,6 +9,7 @@ use App\Models\CoinExchangeHistory;
 use App\Models\Config;
 use App\Models\Myzc;
 use App\Support\NotificationTtl;
+use App\Models\PerpPosition;
 use App\Models\Recharge;
 use App\Models\RechargeMethod;
 use App\Models\UserCoin;
@@ -271,6 +272,57 @@ class FinanceController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Lỗi khi lấy số dư tiền tệ, vui lòng thử lại sau.',
+            ], 500);
+        }
+    }
+
+    public function stats(BinanceTickerService $ticker)
+    {
+        try {
+            $user = JWTAuth::user();
+            $userCoin = UserCoin::where('userid', $user->id)->first();
+            $coins = Coin::where('status', 1)->orderBy('sort', 'asc')->get();
+
+            $spotUsdt = 0.0;
+            foreach ($coins as $coin) {
+                $column = $coin->name;
+                $frozenColumn = $column . '_d';
+                $available = (float) ($userCoin->$column ?? 0);
+                $freeze = (float) ($userCoin->$frozenColumn ?? 0);
+                $amount = $available + $freeze;
+                if ($amount <= 0) {
+                    continue;
+                }
+
+                $rate = $ticker->rateToUsdt((string) $column);
+                if ($rate === null || $rate <= 0) {
+                    continue;
+                }
+
+                $spotUsdt += $amount * $rate;
+            }
+
+            $revenue = (float) PerpPosition::where('uid', $user->id)
+                ->whereIn('status', [PerpPosition::STATUS_CLOSED, PerpPosition::STATUS_LIQUIDATED])
+                ->sum('realized_pnl');
+
+            $spot = number_format($spotUsdt, 2, '.', '');
+            $revenueFmt = number_format($revenue, 2, '.', '');
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Lấy thống kê tài chính thành công',
+                'data' => [
+                    'estimated_diy' => $spot,
+                    'revenue' => $revenueFmt,
+                    'holdings' => $spot,
+                ],
+            ], 200);
+        } catch (\Exception $e) {
+            \Log::error('Finance stats failed', ['error' => $e->getMessage()]);
+            return response()->json([
+                'status' => false,
+                'message' => 'Lỗi khi lấy thống kê tài chính, vui lòng thử lại sau.',
             ], 500);
         }
     }
