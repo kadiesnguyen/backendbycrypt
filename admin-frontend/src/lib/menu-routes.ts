@@ -30,6 +30,7 @@ export const MENU_ROUTE_MAP: Record<string, MenuRouteEntry> = {
   "Finance/loan": { path: "/finance/loans", labelKey: "nav.loans" },
   "Finance/fund": { path: "/finance/transfers", labelKey: "nav.transfers" },
   "Trade/index": { path: "/trading/orders", labelKey: "nav.orders" },
+  "Trade/perp": { path: "/trading/perp", labelKey: "nav.perpPositions" },
   "Trade/sethy": { path: "/trading/settings", labelKey: "nav.contractSettings" },
   "Trade/resultqueue": { path: "/trading/queue", labelKey: "nav.queue" },
   "Trade/tyorder": { path: "/trading/trial-orders", labelKey: "nav.trialOrders" },
@@ -108,6 +109,7 @@ export const MENU_URL_TARGET_GROUP: Record<string, string> = {
 /** Item order inside Hợp đồng nhanh. */
 export const QUICK_CONTRACT_ITEM_ORDER = [
   "Trade/index",
+  "Trade/perp",
   "Trade/sethy",
   "Trade/bbsetting",
   "Trade/bbsjlist",
@@ -136,6 +138,7 @@ export const MENU_BADGE_BY_PATH: Record<string, keyof PendingCounts> = {
   "/finance/withdrawals": "withdrawals",
   "/finance/loans": "loans",
   "/trading/orders": "contract_orders",
+  "/trading/perp": "perp_positions",
 };
 
 export const DASHBOARD_PATH = "/dashboard";

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import type { AdminMenuTree, AdminUser } from "@/features/auth/types";
 import { ContractOrderAlert } from "@/features/trading/orders/contract-order-alert/ContractOrderAlert";
+import { PerpPositionAlert } from "@/features/trading/perp-positions/perp-position-alert/PerpPositionAlert";
 import { AppShellHeader } from "./AppShellHeader";
 import { AppShellMobileSidebar, AppShellSidebar } from "./AppShellSidebar";
 
@@ -53,6 +54,7 @@ export function AppShell({ user, menuTree, children }: AppShellProps) {
         </main>
       </div>
       <ContractOrderAlert />
+      <PerpPositionAlert />
     </div>
   );
 }

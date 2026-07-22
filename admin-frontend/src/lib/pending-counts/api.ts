@@ -4,6 +4,7 @@ export type PendingCounts = {
   deposits: number;
   withdrawals: number;
   contract_orders: number;
+  perp_positions: number;
   loans: number;
 };
 

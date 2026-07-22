@@ -38,6 +38,7 @@ class Hysetting extends Model
         'hy_ylid',
         'hy_fkgl',
         'checkin_rewards',
+        'perp_win_rate',
     ];
 
     /**
@@ -54,5 +55,6 @@ class Hysetting extends Model
      */
     protected $casts = [
         'hy_sxf' => 'float',
+        'perp_win_rate' => 'float',
     ];
 }

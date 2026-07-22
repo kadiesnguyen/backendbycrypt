@@ -1,0 +1,27 @@
+<?php
+
+namespace App\Http\Requests\Admin;
+
+use Illuminate\Foundation\Http\FormRequest;
+
+class ListPerpPositionsRequest extends FormRequest
+{
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function rules(): array
+    {
+        return [
+            'page' => ['sometimes', 'integer', 'min:1'],
+            'per_page' => ['sometimes', 'integer', 'min:1', 'max:100'],
+            'username' => ['sometimes', 'nullable', 'string', 'max:120'],
+            'symbol' => ['sometimes', 'nullable', 'string', 'max:30'],
+            'scope' => ['sometimes', 'string', 'in:open,closed,all'],
+        ];
+    }
+}

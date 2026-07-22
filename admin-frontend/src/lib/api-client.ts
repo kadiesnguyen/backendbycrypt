@@ -12,9 +12,20 @@ export class ApiError extends Error {
 }
 
 function getBaseUrl(): string {
-  return (
-    process.env.NEXT_PUBLIC_ADMIN_API_URL ?? "http://localhost:8000/api/admin"
-  );
+  const url =
+    process.env.NEXT_PUBLIC_ADMIN_API_URL ?? "http://localhost:8000/api/admin";
+
+  // Production builds must never call localhost (missing .env.production.local).
+  if (
+    process.env.NODE_ENV === "production" &&
+    /localhost|127\.0\.0\.1/i.test(url)
+  ) {
+    throw new Error(
+      "NEXT_PUBLIC_ADMIN_API_URL is localhost in production. Set .env.production.local to https://cms.bycrypt.net/api/admin and rebuild.",
+    );
+  }
+
+  return url;
 }
 
 export function getAdminToken(): string | null {

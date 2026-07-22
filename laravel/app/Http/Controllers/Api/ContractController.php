@@ -305,6 +305,7 @@ class ContractController extends Controller
             if ((int) ($user->trade_locked ?? 0) === 1) {
                 return response()->json([
                     'status' => false,
+                    'code' => 'trade_locked',
                     'message' => $user->tradeLockMessage(),
                 ], 422);
             }
@@ -342,6 +343,7 @@ class ContractController extends Controller
             if (!$setting) {
                 return response()->json([
                     'status' => false,
+                    'code' => 'settings_error',
                     'message' => 'Lỗi khi lấy cài đặt. Vui lòng liên hệ hỗ trợ.',
                 ], 500);
             }
@@ -352,6 +354,7 @@ class ContractController extends Controller
             if ($index === false) {
                 return response()->json([
                     'status' => false,
+                    'code' => 'invalid_timeframe',
                     'message' => 'Thời gian được chọn không hợp lệ. Vui lòng chọn một thời gian hợp lệ.',
                 ], 422);
             }
@@ -372,6 +375,7 @@ class ContractController extends Controller
             if ($request->amount > $maxAmount) {
                 return response()->json([
                     'status' => false,
+                    'code' => 'amount_too_high',
                     'message' => 'Số tiền đầu tư quá cao. Tối đa là ' . $maxAmount . ' USDT cho khung thời gian này.',
                 ], 422);
             }
@@ -404,6 +408,7 @@ class ContractController extends Controller
                 DB::rollBack();
                 return response()->json([
                     'status' => false,
+                    'code' => 'balance_unavailable',
                     'message' => 'Không thể truy xuất số dư tài khoản. Vui lòng liên hệ hỗ trợ.',
                 ], 422);
             }
@@ -412,6 +417,7 @@ class ContractController extends Controller
                 DB::rollBack();
                 return response()->json([
                     'status' => false,
+                    'code' => 'order_pending',
                     'message' => 'Bạn đang có lệnh chưa hoàn thành. Vui lòng chờ lệnh hiện tại kết thúc.',
                 ], 422);
             }
@@ -420,6 +426,7 @@ class ContractController extends Controller
                 DB::rollBack();
                 return response()->json([
                     'status' => false,
+                    'code' => 'insufficient_balance',
                     'message' => 'Số dư không đủ. Vui lòng nạp thêm tiền vào tài khoản.',
                 ], 422);
             }
@@ -480,6 +487,7 @@ class ContractController extends Controller
 
                 return response()->json([
                     'status' => true,
+                    'code' => 'order_success',
                     'message' => 'Đặt lệnh thành công',
                     'data' => $orderInfo,
                 ], 200);
@@ -488,6 +496,7 @@ class ContractController extends Controller
             DB::rollBack();
             return response()->json([
                 'status' => false,
+                'code' => 'order_failed',
                 'message' => 'Đã xảy ra lỗi khi đặt lệnh. Vui lòng thử lại sau.',
             ], 500);
         } catch (\Exception $e) {
@@ -495,6 +504,7 @@ class ContractController extends Controller
             \Log::error('Order submission failed', ['error' => $e->getMessage()]);
             return response()->json([
                 'status' => false,
+                'code' => 'order_failed',
                 'message' => 'Đã xảy ra lỗi khi đặt lệnh. Vui lòng thử lại sau.',
             ], 500);
         }

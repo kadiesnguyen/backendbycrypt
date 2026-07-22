@@ -5,6 +5,8 @@ import { ErrorState } from "@/components/ui/ErrorState";
 import { useI18n } from "@/lib/i18n/useI18n";
 import { ContractOrderListContainer } from "@/features/trading/orders/ContractOrderListContainer";
 import { ContractOrderListSkeleton } from "@/features/trading/orders/ContractOrderListSkeleton";
+import { PerpPositionListContainer } from "@/features/trading/perp-positions/PerpPositionListContainer";
+import { PerpPositionListSkeleton } from "@/features/trading/perp-positions/PerpPositionListSkeleton";
 import { DepositWithdrawalChart } from "./components/DepositWithdrawalChart";
 import { DashboardCard } from "./components/DashboardCard";
 import { KpiCard } from "./components/KpiCard";
@@ -55,6 +57,14 @@ export function DashboardContainer() {
         <div className="dashboard-card p-4 md:p-5">
           <Suspense fallback={<ContractOrderListSkeleton />}>
             <ContractOrderListContainer embedded />
+          </Suspense>
+        </div>
+      </section>
+
+      <section aria-label={t("page.dashboard.perpPositions")} className="min-w-0">
+        <div className="dashboard-card p-4 md:p-5">
+          <Suspense fallback={<PerpPositionListSkeleton />}>
+            <PerpPositionListContainer embedded />
           </Suspense>
         </div>
       </section>

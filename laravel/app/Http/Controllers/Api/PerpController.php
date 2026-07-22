@@ -69,6 +69,7 @@ class PerpController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'status' => false,
+                'code' => 'order_failed',
                 'message' => $validator->errors()->first(),
             ], 422);
         }

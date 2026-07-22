@@ -11,6 +11,7 @@ use App\Models\IssueLog;
 use App\Models\Kjorder;
 use App\Models\Loan;
 use App\Models\Myzc;
+use App\Models\PerpPosition;
 use App\Models\Recharge;
 use App\Models\User;
 use App\Models\UserLog;
@@ -104,6 +105,9 @@ class DashboardController extends Controller
                 'deposits' => Recharge::query()->where('status', 1)->count(),
                 'withdrawals' => Myzc::query()->where('status', 1)->count(),
                 'contract_orders' => Hyorder::query()->where('status', 1)->count(),
+                'perp_positions' => PerpPosition::query()
+                    ->where('status', PerpPosition::STATUS_OPEN)
+                    ->count(),
                 'loans' => Loan::query()->where('status', Loan::STATUS_PENDING)->count(),
             ],
         ]);

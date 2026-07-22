@@ -43,6 +43,27 @@ class PerpTradingService
         'DOGEUSDT',
     ];
 
+
+    /** @return array{status: false, code: string, message: string} */
+    private function fail(string $code, string $message): array
+    {
+        return ['status' => false, 'code' => $code, 'message' => $message];
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array{status: true, code: string, message: string, data?: array}
+     */
+    private function ok(string $code, string $message, array $data = []): array
+    {
+        $out = ['status' => true, 'code' => $code, 'message' => $message];
+        if ($data !== []) {
+            $out['data'] = $data;
+        }
+
+        return $out;
+    }
+
     public function settings(): array
     {
         $hy = Hysetting::query()->find(1);
@@ -119,28 +140,28 @@ class PerpTradingService
     public function placeOrder(User $user, string $symbol, string $side, float $qty, int $leverage): array
     {
         if ((int) ($user->trade_locked ?? 0) === 1) {
-            return ['status' => false, 'message' => $user->tradeLockMessage()];
+            return $this->fail('trade_locked', $user->tradeLockMessage());
         }
 
         $symbol = TradingSymbol::normalize($symbol);
         if (!in_array($symbol, self::ALLOWED_SYMBOLS, true)) {
-            return ['status' => false, 'message' => 'Symbol not supported for perpetual trading.'];
+            return $this->fail('symbol_unsupported', 'Symbol not supported for perpetual trading.');
         }
 
         $side = strtolower(trim($side));
         if (!in_array($side, ['buy', 'sell'], true)) {
-            return ['status' => false, 'message' => 'side must be buy or sell.'];
+            return $this->fail('invalid_side', 'side must be buy or sell.');
         }
 
         if ($qty <= 0) {
-            return ['status' => false, 'message' => 'qty must be greater than 0.'];
+            return $this->fail('invalid_qty', 'qty must be greater than 0.');
         }
 
         $leverage = max(1, min(self::MAX_LEVERAGE, $leverage));
 
         $mark = $this->fetchMarkPrice($symbol);
         if (!$mark || $mark <= 0) {
-            return ['status' => false, 'message' => 'Failed to fetch market price.'];
+            return $this->fail('price_fetch_failed', 'Failed to fetch market price.');
         }
 
         $positionSide = $side === 'buy' ? 'long' : 'short';
@@ -183,10 +204,10 @@ class PerpTradingService
                 if ($remaining > 0) {
                     $open->refresh();
                     if ((int) $open->status === PerpPosition::STATUS_OPEN) {
-                        return [
-                            'status' => false,
-                            'message' => 'Close existing position before flipping side.',
-                        ];
+                        return $this->fail(
+                            'close_before_flip',
+                            'Close existing position before flipping side.'
+                        );
                     }
 
                     return $this->openPosition(
@@ -206,7 +227,7 @@ class PerpTradingService
         } catch (\Throwable $e) {
             Log::error('Perp placeOrder failed', ['error' => $e->getMessage()]);
 
-            return ['status' => false, 'message' => 'Failed to place perpetual order.'];
+            return $this->fail('order_failed', 'Failed to place perpetual order.');
         }
     }
 
@@ -228,18 +249,18 @@ class PerpTradingService
                 } elseif ($symbolNorm) {
                     $query->where('symbol', $symbolNorm);
                 } else {
-                    return ['status' => false, 'message' => 'position_id or symbol required.'];
+                    return $this->fail('missing_position_ref', 'position_id or symbol required.');
                 }
 
                 $position = $query->first();
                 if (!$position) {
-                    return ['status' => false, 'message' => 'Open position not found.'];
+                    return $this->fail('position_not_found', 'Open position not found.');
                 }
 
                 $closeQty = $qty && $qty > 0 ? min($qty, (float) $position->qty) : (float) $position->qty;
                 $mark = $this->fetchMarkPrice($position->symbol);
                 if (!$mark || $mark <= 0) {
-                    return ['status' => false, 'message' => 'Failed to fetch market price.'];
+                    return $this->fail('price_fetch_failed', 'Failed to fetch market price.');
                 }
 
                 $cfg = $this->settings();
@@ -258,7 +279,7 @@ class PerpTradingService
         } catch (\Throwable $e) {
             Log::error('Perp close failed', ['error' => $e->getMessage()]);
 
-            return ['status' => false, 'message' => 'Failed to close position.'];
+            return $this->fail('close_failed', 'Failed to close position.');
         }
     }
 
@@ -328,7 +349,7 @@ class PerpTradingService
 
         $userCoin = UserCoin::where('userid', $user->id)->lockForUpdate()->first();
         if (!$userCoin || (float) $userCoin->usdt < $totalCost) {
-            return ['status' => false, 'message' => 'Insufficient USDT balance.'];
+            return $this->fail('insufficient_balance', 'Insufficient USDT balance.');
         }
 
         $liq = PerpMath::liquidationPrice($side, $mark, $leverage, $maint);
@@ -356,11 +377,11 @@ class PerpTradingService
 
         $this->recordFill($user->id, $position->id, $symbol, $side, 'open', $qty, $mark, $leverage, $margin, $fee, 0);
 
-        return [
-            'status' => true,
-            'message' => 'Position opened.',
-            'data' => $this->enrichPosition($position->fresh(), $mark),
-        ];
+        return $this->ok(
+            'order_success',
+            'Position opened.',
+            $this->enrichPosition($position->fresh(), $mark)
+        );
     }
 
     private function increasePosition(
@@ -379,7 +400,7 @@ class PerpTradingService
 
         $userCoin = UserCoin::where('userid', $user->id)->lockForUpdate()->first();
         if (!$userCoin || (float) $userCoin->usdt < $totalCost) {
-            return ['status' => false, 'message' => 'Insufficient USDT balance.'];
+            return $this->fail('insufficient_balance', 'Insufficient USDT balance.');
         }
 
         $newQty = (float) $position->qty + $addQty;
@@ -416,11 +437,11 @@ class PerpTradingService
             0
         );
 
-        return [
-            'status' => true,
-            'message' => 'Position increased.',
-            'data' => $this->enrichPosition($position->fresh(), $mark),
-        ];
+        return $this->ok(
+            'order_success',
+            'Position increased.',
+            $this->enrichPosition($position->fresh(), $mark)
+        );
     }
 
     private function reducePosition(
@@ -434,7 +455,7 @@ class PerpTradingService
     ): array {
         $totalQty = (float) $position->qty;
         if ($closeQty <= 0 || $totalQty <= 0) {
-            return ['status' => false, 'message' => 'Invalid close quantity.'];
+            return $this->fail('invalid_close_qty', 'Invalid close quantity.');
         }
 
         $pnl = PerpMath::unrealizedPnl($position->side, (float) $position->entry_price, $mark, $closeQty);
@@ -444,7 +465,7 @@ class PerpTradingService
 
         $userCoin = UserCoin::where('userid', $user->id)->lockForUpdate()->first();
         if (!$userCoin) {
-            return ['status' => false, 'message' => 'User balance not found.'];
+            return $this->fail('balance_unavailable', 'User balance not found.');
         }
 
         $credit = $marginRelease + $pnl - $fee;
@@ -503,11 +524,11 @@ class PerpTradingService
             $pnl
         );
 
-        return [
-            'status' => true,
-            'message' => $isFull ? 'Position closed.' : 'Position reduced.',
-            'data' => $this->positionToArray($position->fresh()),
-        ];
+        return $this->ok(
+            $isFull ? 'close_success' : 'position_reduced',
+            $isFull ? 'Position closed.' : 'Position reduced.',
+            $this->positionToArray($position->fresh())
+        );
     }
 
     private function liquidatePosition(PerpPosition $position, float $mark): void

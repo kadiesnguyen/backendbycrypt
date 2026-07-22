@@ -16,7 +16,7 @@ use App\Http\Controllers\Admin\FrontendNavigationController;
 use App\Http\Controllers\Admin\IssueController;
 use App\Http\Controllers\Admin\LoanController;
 use App\Http\Controllers\Admin\LoanSettingController;
-use App\Http\Controllers\Admin\PlatformMarketController;
+use App\Http\Controllers\Admin\PerpPositionController;
 use App\Http\Controllers\Admin\BillController;
 use App\Http\Controllers\Admin\TrialOrderController;
 use App\Http\Controllers\Admin\TransferController;
@@ -129,6 +129,15 @@ Route::middleware(['auth:admin', 'check.admin.status'])->group(function () {
     Route::put('contract-orders/win-loss', [ContractOrderController::class, 'setWinLoss']);
     Route::post('contract-orders/{id}/settle', [ContractOrderController::class, 'manualSettle'])->whereNumber('id');
     Route::post('contract-orders/settle-stuck', [ContractOrderController::class, 'settleStuck']);
+
+    Route::get('perp-positions', [PerpPositionController::class, 'index']);
+    Route::get('perp-positions/fills', [PerpPositionController::class, 'fills']);
+    Route::get('perp-positions/pending-count', [PerpPositionController::class, 'pendingCount']);
+    Route::post('perp-positions/mark-notified', [PerpPositionController::class, 'markNotified']);
+    Route::put('perp-positions/win-loss', [PerpPositionController::class, 'setWinLoss']);
+    Route::post('perp-positions/{id}/settle', [PerpPositionController::class, 'settle'])->whereNumber('id');
+    Route::get('perp-settings', [PerpPositionController::class, 'settingsShow']);
+    Route::put('perp-settings', [PerpPositionController::class, 'settingsUpdate']);
 
     Route::get('trial-orders', [TrialOrderController::class, 'index']);
 

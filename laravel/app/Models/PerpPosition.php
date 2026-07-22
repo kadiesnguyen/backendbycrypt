@@ -34,6 +34,8 @@ class PerpPosition extends Model
         'closed_at',
         'close_price',
         'realized_pnl',
+        'kongyk',
+        'admin_notified',
     ];
 
     protected $casts = [
@@ -49,6 +51,8 @@ class PerpPosition extends Model
         'closed_at' => 'datetime',
         'close_price' => 'float',
         'realized_pnl' => 'float',
+        'kongyk' => 'integer',
+        'admin_notified' => 'integer',
     ];
 
     public function user()
