@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\CheckinController;
 use App\Http\Controllers\Api\ContractController;
 use App\Http\Controllers\Api\FinanceController;
 use App\Http\Controllers\Api\IssueController;
+use App\Http\Controllers\Api\LoanController;
 use App\Http\Controllers\Api\NewsController;
 use App\Http\Controllers\Api\OrepoolController;
 use App\Http\Controllers\Api\SettingController;
@@ -107,6 +108,12 @@ Route::middleware(['auth:api', 'check.user.status'])->group(function () {
     });
     Route::group(['prefix' => 'balance'], function () {
       Route::get('/', [FinanceController::class, 'balance']);
+    });
+    Route::group(['prefix' => 'loan'], function () {
+      Route::get('config', [LoanController::class, 'config']);
+      Route::post('/', [LoanController::class, 'store']);
+      Route::get('history', [LoanController::class, 'history']);
+      Route::get('{id}', [LoanController::class, 'show'])->whereNumber('id');
     });
   });
   Route::group(['prefix' => 'checkin'], function () {

@@ -27,6 +27,7 @@ export const MENU_ROUTE_MAP: Record<string, MenuRouteEntry> = {
   "Finance/index": { path: "/finance/bills", labelKey: "nav.bills" },
   "Finance/myzr": { path: "/finance/deposits", labelKey: "nav.deposits" },
   "Finance/myzc": { path: "/finance/withdrawals", labelKey: "nav.withdrawals" },
+  "Finance/loan": { path: "/finance/loans", labelKey: "nav.loans" },
   "Finance/fund": { path: "/finance/transfers", labelKey: "nav.transfers" },
   "Trade/index": { path: "/trading/orders", labelKey: "nav.orders" },
   "Trade/sethy": { path: "/trading/settings", labelKey: "nav.contractSettings" },
@@ -133,6 +134,7 @@ export const HIDDEN_MENU_URLS = new Set([
 export const MENU_BADGE_BY_PATH: Record<string, keyof PendingCounts> = {
   "/finance/deposits": "deposits",
   "/finance/withdrawals": "withdrawals",
+  "/finance/loans": "loans",
   "/trading/orders": "contract_orders",
 };
 
@@ -259,6 +261,7 @@ export const FALLBACK_MENU_TREE: AdminMenuTree = {
       { id: "fb-bills", title: "Bills", url: "Finance/index", slug: "admin.finance.index" },
       { id: "fb-dep", title: "Deposits", url: "Finance/myzr", slug: "admin.finance.myzr" },
       { id: "fb-wd", title: "Withdrawals", url: "Finance/myzc", slug: "admin.finance.myzc" },
+      { id: "fb-loan", title: "Loans", url: "Finance/loan", slug: "admin.finance.loan" },
       { id: "fb-tr", title: "Transfers", url: "Finance/fund", slug: "admin.finance.fund" },
     ],
     "Quick Contract": [

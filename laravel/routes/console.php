@@ -18,4 +18,6 @@ Schedule::command('app:earning-daily-kuangji')->everyFiveMinutes()->withoutOverl
 
 Schedule::command('app:process-limit-trade-orders')->everyFifteenSeconds()->withoutOverlapping();
 
+Schedule::command('app:process-loan-repayments')->everyMinute()->withoutOverlapping();
+
 Schedule::command('app:purge-expired-notices')->hourly()->withoutOverlapping();

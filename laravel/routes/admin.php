@@ -14,6 +14,8 @@ use App\Http\Controllers\Admin\DepositPortController;
 use App\Http\Controllers\Admin\FooterNavigationController;
 use App\Http\Controllers\Admin\FrontendNavigationController;
 use App\Http\Controllers\Admin\IssueController;
+use App\Http\Controllers\Admin\LoanController;
+use App\Http\Controllers\Admin\LoanSettingController;
 use App\Http\Controllers\Admin\PlatformMarketController;
 use App\Http\Controllers\Admin\BillController;
 use App\Http\Controllers\Admin\TrialOrderController;
@@ -108,6 +110,12 @@ Route::middleware(['auth:admin', 'check.admin.status'])->group(function () {
     Route::post('withdrawals/{id}/approve', [WithdrawalController::class, 'approve'])->whereNumber('id');
     Route::post('withdrawals/{id}/reject', [WithdrawalController::class, 'reject'])->whereNumber('id');
     Route::delete('withdrawals/{id}', [WithdrawalController::class, 'destroy'])->whereNumber('id');
+
+    Route::get('loans', [LoanController::class, 'index']);
+    Route::post('loans/{id}/approve', [LoanController::class, 'approve'])->whereNumber('id');
+    Route::post('loans/{id}/reject', [LoanController::class, 'reject'])->whereNumber('id');
+    Route::get('loan-settings', [LoanSettingController::class, 'show']);
+    Route::put('loan-settings', [LoanSettingController::class, 'update']);
 
     Route::get('transfers', [TransferController::class, 'index']);
 
