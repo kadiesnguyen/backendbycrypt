@@ -4,8 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Bill;
-use Illuminate\Support\Facades\Storage;
-use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use App\Models\Recharge;
 use Stevebauman\Location\Facades\Location;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -283,10 +282,8 @@ class UserController extends Controller
     public function referral(Request $request)
     {
         try {
-            // Get authenticated user
             $user = JWTAuth::user();
 
-            // Check if user is authenticated
             if (!$user) {
                 return response()->json([
                     'status' => false,
@@ -294,60 +291,110 @@ class UserController extends Controller
                 ], 401);
             }
 
-            // Prepare user info
-            $userInfo = $user->only(['id', 'username', 'rzstatus', 'logintime', 'loginip', 'invit']);
+            $level = (int) $request->query('level', 1);
+            if (!in_array($level, [1, 2, 3], true)) {
+                $level = 1;
+            }
 
-            // Count referral statistics
-            $count1_rz = User::where('invit_1', $user->id)->where('rzstatus', 2)->count() ?: 0;
-            $count1_nrz = User::where('invit_1', $user->id)->where('rzstatus', '!=', 2)->count() ?: 0;
-            $count2_rz = User::where('invit_2', $user->id)->where('rzstatus', 2)->count() ?: 0;
-            $count2_nrz = User::where('invit_2', $user->id)->where('rzstatus', '!=', 2)->count() ?: 0;
-            $count3_rz = User::where('invit_3', $user->id)->where('rzstatus', 2)->count() ?: 0;
-            $count3_nrz = User::where('invit_3', $user->id)->where('rzstatus', '!=', 2)->count() ?: 0;
+            $levelField = match ($level) {
+                1 => 'invit_1',
+                2 => 'invit_2',
+                3 => 'invit_3',
+            };
 
-            $allcount_rz = $count1_rz + $count2_rz + $count3_rz;
-            $allcount_nrz = $count1_nrz + $count2_nrz + $count3_nrz;
+            $levelOneCount = User::query()->where('invit_1', $user->id)->count();
+            $levelTwoCount = User::query()->where('invit_2', $user->id)->count();
+            $levelThreeCount = User::query()->where('invit_3', $user->id)->count();
 
-            $carr = [
-                'one' => $count1_rz,
-                'two' => $count2_rz,
-                'three' => $count3_rz,
-                'onen' => $count1_nrz,
-                'twon' => $count2_nrz,
-                'threen' => $count3_nrz,
-                'allrz' => $allcount_rz,
-                'allnrz' => $allcount_nrz,
-            ];
+            $totalBonus = (float) Bill::query()
+                ->where('uid', $user->id)
+                ->where('type', 9)
+                ->sum('num');
 
-            // Generate referral URL and QR code
-            $invit = $userInfo['invit'];
-            $referralUrl = env('FE_URL') . '/register?invite=' . $invit;
-            $qrCodePath = 'qrcodes/' . $invit . '.png';
+            $downlineIds = User::query()
+                ->where(function ($query) use ($user) {
+                    $query->where('invit_1', $user->id)
+                        ->orWhere('invit_2', $user->id)
+                        ->orWhere('invit_3', $user->id);
+                })
+                ->pluck('id');
 
-            // Create QR code directory if not exists
-            Storage::disk('public')->makeDirectory('qrcodes');
+            $totalDeposit = $downlineIds->isEmpty()
+                ? 0.0
+                : (float) Recharge::query()
+                    ->whereIn('uid', $downlineIds)
+                    ->where('status', 2)
+                    ->sum('num');
 
-            // Generate and save QR code
-            QrCode::format('png')->size(150)->errorCorrection('H')->generate($referralUrl, storage_path('app/public/' . $qrCodePath));
+            $members = User::query()
+                ->where($levelField, $user->id)
+                ->orderByDesc('id')
+                ->limit(100)
+                ->get(['id', 'username']);
 
-            // Get QR code URL
-            $qrCodeUrl = Storage::disk('public')->url($qrCodePath);
+            $memberIds = $members->pluck('id');
 
-            // Get login logs
-            $logList = UserLog::where('userid', $user->id)
-                ->orderBy('id', 'desc')
-                ->limit(20)
-                ->get();
+            $referralCounts = $memberIds->isEmpty()
+                ? collect()
+                : User::query()
+                    ->whereIn('invit_1', $memberIds)
+                    ->selectRaw('invit_1 as uid, COUNT(*) as cnt')
+                    ->groupBy('invit_1')
+                    ->pluck('cnt', 'uid');
+
+            $memberDeposits = $memberIds->isEmpty()
+                ? collect()
+                : Recharge::query()
+                    ->whereIn('uid', $memberIds)
+                    ->where('status', 2)
+                    ->selectRaw('uid, SUM(num) as total')
+                    ->groupBy('uid')
+                    ->pluck('total', 'uid');
+
+            $memberRows = $members->map(function (User $member) use ($referralCounts, $memberDeposits) {
+                return [
+                    'username' => $member->username,
+                    'referral_count' => (int) ($referralCounts[$member->id] ?? 0),
+                    'total_deposit' => number_format((float) ($memberDeposits[$member->id] ?? 0), 2, '.', ''),
+                ];
+            })->values()->all();
+
+            $count1Rz = User::query()->where('invit_1', $user->id)->where('rzstatus', 2)->count();
+            $count1Nrz = max(0, $levelOneCount - $count1Rz);
+            $count2Rz = User::query()->where('invit_2', $user->id)->where('rzstatus', 2)->count();
+            $count2Nrz = max(0, $levelTwoCount - $count2Rz);
+            $count3Rz = User::query()->where('invit_3', $user->id)->where('rzstatus', 2)->count();
+            $count3Nrz = max(0, $levelThreeCount - $count3Rz);
+
+            $invit = (string) $user->invit;
+            $feUrl = rtrim((string) env('FE_URL', ''), '/');
+            $referralUrl = $feUrl !== ''
+                ? $feUrl . '/register?invite=' . $invit
+                : '/register?invite=' . $invit;
 
             return response()->json([
                 'status' => true,
                 'message' => 'Referral info retrieved successfully',
                 'data' => [
-                    'carr' => $carr,
+                    'total_bonus' => number_format($totalBonus, 2, '.', ''),
+                    'total_deposit' => number_format($totalDeposit, 2, '.', ''),
+                    'level_one_count' => $levelOneCount,
+                    'level_two_count' => $levelTwoCount,
+                    'level_three_count' => $levelThreeCount,
+                    'level' => $level,
+                    'members' => $memberRows,
                     'invit' => $invit,
                     'referral_url' => $referralUrl,
-                    'qrcode_url' => $qrCodeUrl,
-                    'loglist' => $logList->toArray(),
+                    'carr' => [
+                        'one' => $count1Rz,
+                        'two' => $count2Rz,
+                        'three' => $count3Rz,
+                        'onen' => $count1Nrz,
+                        'twon' => $count2Nrz,
+                        'threen' => $count3Nrz,
+                        'allrz' => $count1Rz + $count2Rz + $count3Rz,
+                        'allnrz' => $count1Nrz + $count2Nrz + $count3Nrz,
+                    ],
                 ],
             ], 200);
         } catch (\Exception $e) {
