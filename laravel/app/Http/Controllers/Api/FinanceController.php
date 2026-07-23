@@ -21,7 +21,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
-use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 class FinanceController extends Controller
@@ -86,23 +85,11 @@ class FinanceController extends Controller
     public function rechargeMethods(Request $request)
     {
         try {
+            // ponytail: client renders QR from address; skip server PNG (needs imagick).
             $methods = RechargeMethod::where('status', 1)
                 ->get(['id', 'name', 'wallet', 'address', 'coin', 'status']);
 
-            Storage::disk('public')->makeDirectory('qrcodes/recharge-methods');
-
-            $data = $methods->map(function ($method) {
-                $address = trim((string) ($method->address ?? ''));
-                $qrcodeUrl = null;
-
-                if ($address !== '') {
-                    $qrFileName = $method->id . '-' . md5($address) . '.png';
-                    $qrCodePath = 'qrcodes/recharge-methods/' . $qrFileName;
-
-                    QrCode::format('png')->size(220)->errorCorrection('H')->generate($address, storage_path('app/public/' . $qrCodePath));
-                    $qrcodeUrl = Storage::disk('public')->url($qrCodePath);
-                }
-
+            $data = $methods->map(static function ($method) {
                 return [
                     'id' => $method->id,
                     'name' => $method->name,
@@ -110,14 +97,14 @@ class FinanceController extends Controller
                     'address' => $method->address,
                     'coin' => $method->coin,
                     'status' => $method->status,
-                    'qrcode_url' => $qrcodeUrl,
+                    'qrcode_url' => null,
                 ];
             });
 
             return response()->json([
                 'status' => true,
                 'message' => 'Lấy phương thức nạp tiền thành công',
-                'data' => $data->toArray(),
+                'data' => $data->values()->all(),
             ], 200);
         } catch (\Exception $e) {
             \Log::error('Recharge methods retrieval failed', ['error' => $e->getMessage()]);
