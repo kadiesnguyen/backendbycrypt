@@ -440,13 +440,6 @@ class FinanceController extends Controller
         try {
             $user = JWTAuth::user();
 
-            if ($user->txstate != 1) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Vui lòng thêm mật khẩu thanh toán trước khi rút tiền.',
-                ], 422);
-            }
-
             if ($user->rzstatus != 2) {
                 return response()->json([
                     'status' => false,
@@ -466,7 +459,6 @@ class FinanceController extends Controller
             $validator = Validator::make($request->all(), [
                 'cid' => 'required|integer|exists:tw_coin,id',
                 'amount' => 'required|numeric|gt:0',
-                'paypassword' => 'required|string',
             ]);
 
             if ($validator->fails()) {
@@ -475,16 +467,6 @@ class FinanceController extends Controller
                     'message' => $validator->errors()->first(),
                 ], 422);
             }
-
-            // Verify paypassword
-            if (!$user->verifyPaypassword($request->paypassword)) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Sai mật khẩu thanh toán',
-                ], 422);
-            }
-
-            $user->repairPaypasswordIfLegacy($request->paypassword);
 
             // Get coin info
             $coin = Coin::findOrFail($request->cid);
