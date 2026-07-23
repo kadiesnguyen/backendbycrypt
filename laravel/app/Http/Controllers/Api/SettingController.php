@@ -35,15 +35,23 @@ class SettingController extends Controller
     public function localePhones(Request $request)
     {
         $locale = (string) $request->query('locale', 'vi');
+        $locales = LocalePhoneCatalog::entriesForLocale($locale);
         $default = LocalePhoneCatalog::findByLocale($locale)
             ?? LocalePhoneCatalog::findByLocale('vi')
-            ?? LocalePhoneCatalog::entries()[0];
+            ?? ($locales[0] ?? null);
+
+        if ($default && strtolower(trim($locale)) === 'vi') {
+            $viNames = LocalePhoneCatalog::viNames();
+            if (isset($viNames[$default['code']])) {
+                $default['name'] = $viNames[$default['code']];
+            }
+        }
 
         return response()->json([
             'status' => true,
             'message' => 'Locale phone list retrieved successfully.',
             'data' => [
-                'locales' => LocalePhoneCatalog::entries(),
+                'locales' => $locales,
                 'default' => $default,
             ],
         ]);
