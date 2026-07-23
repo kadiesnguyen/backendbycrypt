@@ -107,13 +107,17 @@ class DepositController extends Controller
                     throw new \RuntimeException('system_error');
                 }
 
+                $coinLabel = strtoupper(trim((string) $recharge->coin));
+                $amountLabel = rtrim(rtrim(number_format((float) $num, 8, '.', ''), '0'), '.');
                 Notice::query()->create([
                     'uid' => $recharge->uid,
                     'account' => $recharge->username,
-                    'title' => 'Xem xét tiền gửi',
-                    'content' => 'Số tiền nạp của bạn đã được nhận, hãy chú ý kiểm tra',
+                    'title' => 'Gửi tiền ' . $coinLabel . ' thành công',
+                    'content' => 'Bạn đã nạp thành công ' . $amountLabel . ' ' . $coinLabel
+                        . ' vào lúc ' . $now . ' (UTC). Nếu bạn không nhận ra hoạt động này, vui lòng liên hệ với chúng tôi ngay lập tức.',
                     'addtime' => $now,
                     'status' => 1,
+                    'user_view' => 1,
                 ]);
             });
         } catch (\RuntimeException $e) {

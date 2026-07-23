@@ -79,13 +79,17 @@ class WithdrawalController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
+        $coinLabel = strtoupper(trim((string) $withdrawal->coinname));
+        $amountLabel = rtrim(rtrim(number_format((float) $withdrawal->num, 8, '.', ''), '0'), '.');
         Notice::query()->create([
             'uid' => $withdrawal->userid,
             'account' => $withdrawal->username,
-            'title' => 'Xem xét rút tiền',
-            'content' => 'Yêu cầu rút tiền của bạn đã được phê duyệt, vui lòng kiểm tra',
+            'title' => 'Rút ' . $coinLabel . ' thành công',
+            'content' => 'Bạn đã rút thành công ' . $amountLabel . ' ' . $coinLabel
+                . ' lúc ' . $now . ' (UTC). Nếu bạn không nhận ra hoạt động này, vui lòng liên hệ với chúng tôi ngay lập tức.',
             'addtime' => $now,
             'status' => 1,
+            'user_view' => 1,
         ]);
 
         return response()->json([

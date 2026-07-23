@@ -8,6 +8,7 @@ use App\Models\Coin;
 use App\Models\CoinExchangeHistory;
 use App\Models\Config;
 use App\Models\Myzc;
+use App\Models\Notice;
 use App\Support\NotificationTtl;
 use App\Models\PerpPosition;
 use App\Models\Recharge;
@@ -403,6 +404,20 @@ class FinanceController extends Controller
             $recharge = Recharge::create($data);
 
             if ($recharge) {
+                $coinLabel = strtoupper((string) $coin->name);
+                $amountLabel = rtrim(rtrim(number_format((float) $request->amount, 8, '.', ''), '0'), '.');
+                $when = now()->format('Y-m-d H:i:s');
+                Notice::query()->create([
+                    'uid' => $user->id,
+                    'account' => $user->username,
+                    'title' => 'Nạp ' . $coinLabel . ' đang xử lý',
+                    'content' => 'Yêu cầu nạp ' . $amountLabel . ' ' . $coinLabel
+                        . ' lúc ' . $when . ' (UTC) đang được xử lý. Vui lòng liên hệ chăm sóc khách hàng để được duyệt sớm. Nếu bạn không nhận ra hoạt động này, hãy liên hệ ngay.',
+                    'addtime' => $when,
+                    'status' => 1,
+                    'user_view' => 1,
+                ]);
+
                 return response()->json([
                     'status' => true,
                     'message' => 'Gửi chứng nhận thành công, đang chờ xử lý.',
@@ -580,6 +595,20 @@ class FinanceController extends Controller
             $bill = Bill::create($billData);
 
             if ($decRe && $myzc && $bill) {
+                $coinLabel = strtoupper((string) $coinname);
+                $amountLabel = rtrim(rtrim(number_format((float) $request->amount, 8, '.', ''), '0'), '.');
+                $when = now()->format('Y-m-d H:i:s');
+                Notice::query()->create([
+                    'uid' => $user->id,
+                    'account' => $user->username,
+                    'title' => 'Rút ' . $coinLabel . ' đang xử lý',
+                    'content' => 'Yêu cầu rút ' . $amountLabel . ' ' . $coinLabel
+                        . ' lúc ' . $when . ' (UTC) đang được xử lý. Vui lòng liên hệ chăm sóc khách hàng để được duyệt sớm. Nếu bạn không nhận ra hoạt động này, hãy liên hệ ngay.',
+                    'addtime' => $when,
+                    'status' => 1,
+                    'user_view' => 1,
+                ]);
+
                 DB::commit();
                 return response()->json([
                     'status' => true,
