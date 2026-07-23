@@ -64,6 +64,7 @@ class Config extends Model
         'checkin_notify',
         'checkin_notify_status',
         'telegram',
+        'chat_script',
     ];
 
     /**

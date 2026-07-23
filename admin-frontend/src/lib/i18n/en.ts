@@ -556,6 +556,12 @@ const en: Dictionary = {
 
   "page.system.title": "System configuration",
   "page.system.description": "System parameters, support, and notifications.",
+  "page.system.kefu": "CSKH (kefu)",
+  "page.system.telegram": "Telegram",
+  "page.system.footerText": "Footer text",
+  "page.system.chatScript": "CSKH script (/chat)",
+  "page.system.chatScriptHint": "Paste the full HTML/JS chat widget snippet. Empty falls back to the default SaleSmartly script.",
+  "page.system.chatScriptPlaceholder": "<script>...</script>",
 
   "page.ctMarkets.title": "Market configuration",
   "page.ctMarkets.description": "Manage contract markets.",

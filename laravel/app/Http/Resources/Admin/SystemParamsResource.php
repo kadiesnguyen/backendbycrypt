@@ -23,6 +23,7 @@ class SystemParamsResource extends JsonResource
             'gfemail' => $this->gfemail,
             'footertext' => $this->footertext,
             'telegram' => $this->telegram,
+            'chat_script' => $this->chat_script,
             'tymoney' => $this->tymoney,
             'regswitch' => (int) $this->regswitch,
             'tbswitch' => (int) $this->tbswitch,

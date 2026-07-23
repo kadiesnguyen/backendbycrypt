@@ -116,6 +116,7 @@ class SiteConfigController extends Controller
             'gfemail',
             'footertext',
             'telegram',
+            'chat_script',
             'tymoney',
             'regswitch',
             'tbswitch',

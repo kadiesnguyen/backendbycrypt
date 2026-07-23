@@ -556,6 +556,12 @@ const vi: Dictionary = {
 
   "page.system.title": "Cấu hình hệ thống",
   "page.system.description": "Tham số hệ thống, CSKH và thông báo.",
+  "page.system.kefu": "CSKH (kefu)",
+  "page.system.telegram": "Telegram",
+  "page.system.footerText": "Footer text",
+  "page.system.chatScript": "CSKH script (/chat)",
+  "page.system.chatScriptHint": "Dán nguyên đoạn script HTML/JS cho trang chat. Để trống sẽ dùng SaleSmartly mặc định.",
+  "page.system.chatScriptPlaceholder": "<script>...</script>",
 
   "page.ctMarkets.title": "Cấu hình thị trường",
   "page.ctMarkets.description": "Quản lý thị trường hợp đồng.",
