@@ -434,18 +434,13 @@ class FinanceController extends Controller
                 ], 422);
             }
 
-            // Check if user has linked bank account
-            if (empty($user->bank_name) || empty($user->bank_acc_no) || empty($user->bank_acc_name)) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Vui lòng liên kết tài khoản ngân hàng trước khi rút tiền.',
-                ], 422);
-            }
-
             // Validate request
             $validator = Validator::make($request->all(), [
                 'cid' => 'required|integer|exists:tw_coin,id',
                 'amount' => 'required|numeric|gt:0',
+                'address' => 'nullable|string|max:255',
+                'wallet' => 'nullable|string|max:50',
+                'network' => 'nullable|string|max:50',
             ]);
 
             if ($validator->fails()) {
@@ -455,11 +450,37 @@ class FinanceController extends Controller
                 ], 422);
             }
 
+            $cryptoAddress = trim((string) $request->input('address', ''));
+            $network = trim((string) ($request->input('wallet') ?: $request->input('network') ?: ''));
+
+            // Crypto withdraw uses address+network; otherwise require linked bank.
+            if ($cryptoAddress === '') {
+                if (empty($user->bank_name) || empty($user->bank_acc_no) || empty($user->bank_acc_name)) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Vui lòng liên kết tài khoản ngân hàng trước khi rút tiền.',
+                    ], 422);
+                }
+            }
+
             // Get coin info
             $coin = Coin::findOrFail($request->cid);
 
-            // Check if bank exchange rate is available
-            if (!isset($coin->bank) || $coin->bank <= 0) {
+            if ($cryptoAddress !== '' && $network !== '' && !empty($coin->czline)) {
+                $allowed = collect(preg_split('/[,|\/]/', (string) $coin->czline) ?: [])
+                    ->map(static fn ($n) => strtoupper(trim((string) $n)))
+                    ->filter()
+                    ->values();
+                if ($allowed->isNotEmpty() && !$allowed->contains(strtoupper($network))) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Mạng rút không hợp lệ cho đồng tiền này.',
+                    ], 422);
+                }
+            }
+
+            // Bank FX rate only required for bank withdrawals
+            if ($cryptoAddress === '' && (!isset($coin->bank) || $coin->bank <= 0)) {
                 return response()->json([
                     'status' => false,
                     'message' => 'Không thể lấy tỷ giá cho đồng tiền này. Rút tiền không khả dụng.',
@@ -505,12 +526,18 @@ class FinanceController extends Controller
                 ], 422);
             }
 
-            $bankInfo = $user->bank_name . ' - ' . $user->bank_acc_no . ' - ' . $user->bank_acc_name;
+            $isCrypto = $cryptoAddress !== '';
+            $walletLabel = $isCrypto
+                ? ($network !== '' ? strtoupper($network) : 'CRYPTO')
+                : 'BANK';
+            $withdrawAddress = $isCrypto
+                ? $cryptoAddress
+                : ($user->bank_name . ' - ' . $user->bank_acc_no . ' - ' . $user->bank_acc_name);
             $num_real = $request->amount;
 
-            // Convert to VND for admin approval
+            // Convert to VND for admin approval (bank rate; crypto keeps amount as mum fallback)
             $bankRate = (float) ($coin->bank ?? 1);
-            $num_real_vnd = $num_real * $bankRate;
+            $num_real_vnd = $isCrypto ? $num_real : ($num_real * $bankRate);
 
             // Start database transaction
             DB::beginTransaction();
@@ -522,12 +549,12 @@ class FinanceController extends Controller
             $myzcData = [
                 'userid' => $user->id,
                 'username' => $user->username,
-                'wallet' => 'BANK',
+                'wallet' => $walletLabel,
                 'coinname' => $coinname,
                 'num' => $request->amount,
                 'fee' => $fee,
                 'mum' => $num_real_vnd,
-                'address' => $bankInfo,
+                'address' => $withdrawAddress,
                 'sort' => 1,
                 'addtime' => now()->toDateTimeString(),
                 'endtime' => now()->toDateTimeString(),
@@ -536,6 +563,9 @@ class FinanceController extends Controller
             $myzc = Myzc::create($myzcData);
 
             // Create bill record
+            $remark = $isCrypto
+                ? ('Withdrawal ' . $walletLabel . ': ' . $cryptoAddress . ' (Amount: ' . $request->amount . ', Fee: ' . $fee . ')')
+                : ('Withdrawal to bank: ' . $user->bank_name . ' (Amount: ' . $request->amount . ', Fee: ' . $fee . ')');
             $billData = [
                 'uid' => $user->id,
                 'username' => $user->username,
@@ -545,7 +575,7 @@ class FinanceController extends Controller
                 'type' => 2,
                 'addtime' => now()->toDateTimeString(),
                 'st' => 2,
-                'remark' => 'Withdrawal to bank: ' . $user->bank_name . ' (Amount: ' . $request->amount . ', Fee: ' . $fee . ')',
+                'remark' => $remark,
             ];
             $bill = Bill::create($billData);
 
@@ -562,6 +592,9 @@ class FinanceController extends Controller
                         'amount_received_vnd' => $num_real_vnd,
                         'exchange_rate' => $bankRate,
                         'coin' => $coinname,
+                        'wallet' => $walletLabel,
+                        'network' => $network,
+                        'address' => $withdrawAddress,
                         'bank_name' => $user->bank_name,
                         'bank_acc_no' => $user->bank_acc_no,
                         'bank_acc_name' => $user->bank_acc_name,

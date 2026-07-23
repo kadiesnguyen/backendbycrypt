@@ -238,17 +238,21 @@ export function CoinFormDialog({
                 <fieldset className="rounded-lg border border-border p-4">
                   <legend className="px-1 text-sm font-medium text-foreground">Deposit settings</legend>
                   <div className="mt-2 grid gap-4 sm:grid-cols-2">
-                    <div>
+                    <div className="sm:col-span-2">
                       <label htmlFor="coin-czline" className="block text-sm font-medium text-foreground">
-                        Chain / line
+                        Networks (deposit & withdraw)
                       </label>
                       <input
                         id="coin-czline"
                         type="text"
                         value={czline}
                         onChange={(e) => setCzline(e.target.value)}
+                        placeholder="TRC20,ERC20,BEP20"
                         className={inputClass}
                       />
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Comma-separated. Shown as network buttons on user deposit/withdraw screens.
+                      </p>
                     </div>
                     <div>
                       <label htmlFor="coin-czaddress" className="block text-sm font-medium text-foreground">
