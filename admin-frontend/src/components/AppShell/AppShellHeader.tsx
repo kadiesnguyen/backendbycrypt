@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useLogout } from "@/features/auth/useAuth";
 import type { AdminUser } from "@/features/auth/types";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { FinanceAlertBell } from "@/features/finance/finance-pending-alert/FinanceAlertBell";
 import { useI18n } from "@/lib/i18n/useI18n";
 import type { Locale } from "@/lib/i18n/types";
 
@@ -55,6 +56,7 @@ export function AppShellHeader({ user, menuOpen = false, onMenuToggle }: AppShel
         </div>
       </div>
       <div className="mt-3 flex flex-wrap items-center justify-end gap-2 border-t border-border pt-3 sm:gap-3 md:mt-0 md:border-t-0 md:pt-0">
+        <FinanceAlertBell />
         <ThemeToggle compact />
         <label className="flex items-center gap-2 text-sm text-muted">
           <span className="sr-only">{t("common.language")}</span>
