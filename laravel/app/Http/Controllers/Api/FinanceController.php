@@ -32,17 +32,26 @@ class FinanceController extends Controller
             // Get authenticated user
             $user = JWTAuth::user();
 
-            // Get history
-            $history = Bill::where('uid', $user->id)
-                ->where('type', 17)
+            $history = Recharge::where('uid', $user->id)
                 ->orderBy('id', 'desc')
                 ->limit(20)
-                ->get();
+                ->get()
+                ->map(static function (Recharge $row) {
+                    return [
+                        'id' => $row->id,
+                        'coinname' => strtolower((string) $row->coin),
+                        'num' => $row->num,
+                        'addtime' => $row->addtime,
+                        'status' => (int) $row->status,
+                    ];
+                })
+                ->values()
+                ->all();
 
             return response()->json([
                 'status' => true,
                 'message' => 'Lấy lịch sử gửi tiền thành công',
-                'data' => $history->toArray(),
+                'data' => $history,
             ], 200);
         } catch (\Exception $e) {
             \Log::error('History retrieval failed', ['error' => $e->getMessage()]);
