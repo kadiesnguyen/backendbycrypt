@@ -12,6 +12,10 @@ return new class extends Migration
             return;
         }
 
+        // MySQL rejects ALTER when legacy addtime default '0000-00-00 00:00:00' is present.
+        DB::statement("SET SESSION sql_mode = ''");
+        DB::statement("ALTER TABLE `tw_coin` MODIFY `addtime` DATETIME NULL DEFAULT NULL");
+
         // float(10,2) rounded 0.015 → 0.02, so admin "couldn't save" fee rates.
         DB::statement('ALTER TABLE `tw_coin` MODIFY `czline` VARCHAR(255) NULL');
         DB::statement('ALTER TABLE `tw_coin` MODIFY `czaddress` VARCHAR(512) NULL');
@@ -33,6 +37,7 @@ return new class extends Migration
             return;
         }
 
+        DB::statement("SET SESSION sql_mode = ''");
         DB::statement('ALTER TABLE `tw_coin` MODIFY `czline` VARCHAR(50) NULL');
         DB::statement('ALTER TABLE `tw_coin` MODIFY `czaddress` VARCHAR(225) NULL');
         DB::statement('ALTER TABLE `tw_coin` MODIFY `txsxf` FLOAT(10, 2) NULL');
