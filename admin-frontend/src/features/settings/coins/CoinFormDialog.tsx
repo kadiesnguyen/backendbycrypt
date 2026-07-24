@@ -358,11 +358,11 @@ export function CoinFormDialog({
                         type="text"
                         value={txsxf}
                         onChange={(e) => setTxsxf(e.target.value)}
-                        placeholder="0.00015"
+                        placeholder="0.015"
                         className={inputClass}
                       />
                       <p className="mt-1 text-xs text-muted-foreground">
-                        Rate as decimal: 0.00015 = 0.015%, 0.02 = 2%.
+                        Phí = số tiền rút × giá trị%. Ví dụ 0.015 = 0.015% (rút 1000 → phí 0.15).
                       </p>
                     </div>
                     <div>

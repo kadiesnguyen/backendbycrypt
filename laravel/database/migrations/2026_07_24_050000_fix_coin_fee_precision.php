@@ -24,8 +24,8 @@ return new class extends Migration
         DB::statement('ALTER TABLE `tw_coin` MODIFY `bbsxf` DECIMAL(16, 8) NULL');
         DB::statement('ALTER TABLE `tw_coin` MODIFY `hysxf` DECIMAL(16, 8) NULL');
 
-        // Withdrawal fee rate: 0.00015 = 0.015% (same convention as bbsxf: 0.02 = 2%).
-        DB::table('tw_coin')->update(['txsxf' => 0.00015]);
+        // Withdrawal fee percent figure: 0.015 => fee = amount * 0.015 / 100.
+        DB::table('tw_coin')->update(['txsxf' => 0.015]);
 
         // Restore USDT spot fee after accidental float round-trip during debugging.
         DB::table('tw_coin')->where('name', 'usdt')->update(['bbsxf' => 0.03]);
