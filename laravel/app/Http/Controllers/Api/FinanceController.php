@@ -528,16 +528,17 @@ class FinanceController extends Controller
 
             $coinname = $coin->name;
 
-            // Fee = withdraw amount × txsxf%. Admin stores percent figure: 0.015 => 0.015%.
+            // Fee = amount × txsxf%. Receive = amount − fee (e.g. 1000 − 0.15).
+            // Admin stores percent figure: 0.015 => 0.015%.
             $feePercent = (float) ($coin->txsxf ?? 0);
             $fee = $feePercent > 0 ? ($request->amount * $feePercent / 100) : 0;
-            $total_needed = $request->amount + $fee;
+            $num_real = max($request->amount - $fee, 0);
+            $total_needed = $request->amount;
 
-            // Check if user has enough balance including fee
             if ($userCoin->$coinname < $total_needed) {
                 return response()->json([
                     'status' => false,
-                    'message' => 'Số dư không đủ. Cần: ' . $total_needed . ' (Rút: ' . $request->amount . ' + Phí: ' . $fee . ')',
+                    'message' => 'Số dư không đủ. Cần: ' . $total_needed,
                 ], 422);
             }
 
@@ -548,7 +549,6 @@ class FinanceController extends Controller
             $withdrawAddress = $isCrypto
                 ? $cryptoAddress
                 : ($user->bank_name . ' - ' . $user->bank_acc_no . ' - ' . $user->bank_acc_name);
-            $num_real = $request->amount;
 
             // Convert to VND for admin approval (bank rate; crypto keeps amount as mum fallback)
             $bankRate = (float) ($coin->bank ?? 1);
@@ -557,7 +557,7 @@ class FinanceController extends Controller
             // Start database transaction
             DB::beginTransaction();
 
-            // Decrease user coin balance (including fee)
+            // Debit full requested amount; fee is taken from the payout.
             $decRe = UserCoin::where('userid', $user->id)->decrement($coinname, $total_needed);
 
             // Create withdrawal record
@@ -579,8 +579,8 @@ class FinanceController extends Controller
 
             // Create bill record
             $remark = $isCrypto
-                ? ('Withdrawal ' . $walletLabel . ': ' . $cryptoAddress . ' (Amount: ' . $request->amount . ', Fee: ' . $fee . ')')
-                : ('Withdrawal to bank: ' . $user->bank_name . ' (Amount: ' . $request->amount . ', Fee: ' . $fee . ')');
+                ? ('Withdrawal ' . $walletLabel . ': ' . $cryptoAddress . ' (Amount: ' . $request->amount . ', Fee: ' . $fee . ', Receive: ' . $num_real . ')')
+                : ('Withdrawal to bank: ' . $user->bank_name . ' (Amount: ' . $request->amount . ', Fee: ' . $fee . ', Receive: ' . $num_real . ')');
             $billData = [
                 'uid' => $user->id,
                 'username' => $user->username,

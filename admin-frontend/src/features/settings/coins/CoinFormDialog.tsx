@@ -362,7 +362,7 @@ export function CoinFormDialog({
                         className={inputClass}
                       />
                       <p className="mt-1 text-xs text-muted-foreground">
-                        Phí = số tiền rút × giá trị%. Ví dụ 0.015 = 0.015% (rút 1000 → phí 0.15).
+                        Phí = số rút × giá trị%. Ví dụ 0.015 = 0.015% (rút 1000 → phí 0.15, nhận 999.85).
                       </p>
                     </div>
                     <div>
