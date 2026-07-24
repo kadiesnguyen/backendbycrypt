@@ -528,7 +528,7 @@ class FinanceController extends Controller
 
             $coinname = $coin->name;
 
-            // Withdrawal fee from txsxf (admin "Withdrawal fee"). 0.02 = 2%, 0.015 = 1.5%.
+            // Withdrawal fee from txsxf (admin "Withdrawal fee"). 0.02 = 2%, 0.00015 = 0.015%.
             $feeRate = (float) ($coin->txsxf ?? 0);
             $fee = $feeRate > 0 ? ($request->amount * $feeRate) : 0;
             $total_needed = $request->amount + $fee;

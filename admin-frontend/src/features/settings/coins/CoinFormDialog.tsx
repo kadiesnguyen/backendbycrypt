@@ -351,11 +351,11 @@ export function CoinFormDialog({
                         type="text"
                         value={txsxf}
                         onChange={(e) => setTxsxf(e.target.value)}
-                        placeholder="0.015"
+                        placeholder="0.00015"
                         className={inputClass}
                       />
                       <p className="mt-1 text-xs text-muted-foreground">
-                        Rate as decimal: 0.015 = 1.5%, 0.02 = 2%.
+                        Rate as decimal: 0.00015 = 0.015%, 0.02 = 2%.
                       </p>
                     </div>
                     <div>
