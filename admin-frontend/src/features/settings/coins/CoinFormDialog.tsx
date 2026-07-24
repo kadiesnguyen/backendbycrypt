@@ -103,23 +103,29 @@ export function CoinFormDialog({
 
   if (!isOpen) return null;
 
+  const optionalText = (value: string) => {
+    const trimmed = value.trim();
+    return trimmed === "" ? undefined : trimmed;
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const payload: CoinUpsertPayload = {
-      title: title.trim() || undefined,
+      title: optionalText(title),
       type: Number(type),
       sort: Number(sort),
       status: Number(status),
-      czline: czline.trim() || undefined,
-      czaddress: czaddress.trim() || undefined,
+      czline: optionalText(czline),
+      czaddress: optionalText(czaddress),
       czstatus: Number(czstatus),
-      czminnum: czminnum.trim() || undefined,
+      czminnum: optionalText(czminnum),
       txstatus: Number(txstatus),
-      txminnum: txminnum.trim() || undefined,
-      txmaxnum: txmaxnum.trim() || undefined,
-      txsxf: txsxf.trim() || undefined,
-      bbsxf: bbsxf.trim() || undefined,
-      hysxf: hysxf.trim() || undefined,
+      txminnum: optionalText(txminnum),
+      txmaxnum: optionalText(txmaxnum),
+      // Keep "0" / "0.015" — do not treat zero as empty.
+      txsxf: optionalText(txsxf),
+      bbsxf: optionalText(bbsxf),
+      hysxf: optionalText(hysxf),
     };
 
     if (!isEdit) {
@@ -338,15 +344,19 @@ export function CoinFormDialog({
                     </div>
                     <div>
                       <label htmlFor="coin-txsxf" className="block text-sm font-medium text-foreground">
-                        Withdrawal fee
+                        Withdrawal fee (txsxf)
                       </label>
                       <input
                         id="coin-txsxf"
                         type="text"
                         value={txsxf}
                         onChange={(e) => setTxsxf(e.target.value)}
+                        placeholder="0.015"
                         className={inputClass}
                       />
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Rate as decimal: 0.015 = 1.5%, 0.02 = 2%.
+                      </p>
                     </div>
                     <div>
                       <label htmlFor="coin-bbsxf" className="block text-sm font-medium text-foreground">
@@ -357,6 +367,7 @@ export function CoinFormDialog({
                         type="text"
                         value={bbsxf}
                         onChange={(e) => setBbsxf(e.target.value)}
+                        placeholder="0.015"
                         className={inputClass}
                       />
                     </div>

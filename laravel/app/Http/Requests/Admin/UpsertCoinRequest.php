@@ -28,7 +28,7 @@ class UpsertCoinRequest extends FormRequest
             'title' => ['sometimes', 'nullable', 'string', 'max:255'],
             'type' => ['sometimes', 'integer', 'in:1,2,3'],
             'czline' => ['sometimes', 'nullable', 'string', 'max:255'],
-            'czaddress' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'czaddress' => ['sometimes', 'nullable', 'string', 'max:512'],
             'czstatus' => ['sometimes', 'integer', 'in:1,2'],
             'czminnum' => ['sometimes', 'nullable', 'numeric'],
             'txstatus' => ['sometimes', 'integer', 'in:1,2'],

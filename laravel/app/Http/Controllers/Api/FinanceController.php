@@ -528,8 +528,8 @@ class FinanceController extends Controller
 
             $coinname = $coin->name;
 
-            // Calculate withdrawal fee first (bbsxf is in decimal format: 0.02 = 2%)
-            $feeRate = (float) ($coin->bbsxf ?? 0);
+            // Withdrawal fee from txsxf (admin "Withdrawal fee"). 0.02 = 2%, 0.015 = 1.5%.
+            $feeRate = (float) ($coin->txsxf ?? 0);
             $fee = $feeRate > 0 ? ($request->amount * $feeRate) : 0;
             $total_needed = $request->amount + $fee;
 

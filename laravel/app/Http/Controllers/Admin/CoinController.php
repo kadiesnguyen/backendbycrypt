@@ -141,10 +141,13 @@ class CoinController extends Controller
         $payload = $this->coinPayload($request);
         $payload['addtime'] = now()->format('Y-m-d H:i:s');
 
-        if (!$coin->update($payload)) {
+        try {
+            $coin->fill($payload);
+            $coin->save();
+        } catch (\Throwable $e) {
             return response()->json([
                 'status' => false,
-                'message' => 'Data is not modified.',
+                'message' => $e->getMessage() !== '' ? $e->getMessage() : 'Cannot save coin.',
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
