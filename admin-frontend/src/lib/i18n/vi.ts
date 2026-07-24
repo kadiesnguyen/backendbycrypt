@@ -550,6 +550,8 @@ const vi: Dictionary = {
 
   "page.coins.title": "Cấu hình coin",
   "page.coins.description": "Quản lý coin và token được hỗ trợ.",
+  "page.coins.saveSuccess": "Đã lưu coin thành công.",
+  "page.coins.createSuccess": "Đã tạo coin thành công.",
 
   "page.depositPorts.title": "Cổng nạp tiền",
   "page.depositPorts.description": "Cấu hình cổng và địa chỉ nạp tiền.",

@@ -12,6 +12,7 @@ type CoinFormDialogProps = {
   isLoadingDetail: boolean;
   isPending: boolean;
   error: string | null;
+  success: string | null;
   onSubmit: (payload: CoinUpsertPayload) => void;
   onClose: () => void;
 };
@@ -22,6 +23,7 @@ export function CoinFormDialog({
   isLoadingDetail,
   isPending,
   error,
+  success,
   onSubmit,
   onClose,
 }: CoinFormDialogProps) {
@@ -160,6 +162,11 @@ export function CoinFormDialog({
             {error ? (
               <div role="alert" className="rounded-lg border border-danger/40 bg-danger/10 px-4 py-3 text-sm text-danger">
                 {error}
+              </div>
+            ) : null}
+            {success ? (
+              <div role="status" className="rounded-lg border border-success/40 bg-success/10 px-4 py-3 text-sm text-success">
+                {success}
               </div>
             ) : null}
 
@@ -400,10 +407,10 @@ export function CoinFormDialog({
             </button>
             <button
               type="submit"
-              disabled={isPending || isLoadingDetail}
+              disabled={isPending || isLoadingDetail || Boolean(success)}
               className="rounded bg-primary px-4 py-2 text-sm font-medium text-background transition hover:opacity-90 disabled:opacity-40"
             >
-              {isPending ? "Saving…" : isEdit ? "Save changes" : "Create coin"}
+              {success ? "Saved" : isPending ? "Saving…" : isEdit ? "Save changes" : "Create coin"}
             </button>
           </div>
         </form>

@@ -3,7 +3,7 @@
 import { PageHeader } from "@/components/list/ListPageParts";
 import { useI18n } from "@/lib/i18n/useI18n";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { ErrorState } from "@/components/ui/ErrorState";
@@ -26,7 +26,9 @@ export function CoinListContainer() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [pendingDelete, setPendingDelete] = useState<AdminCoin | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
+  const [formSuccess, setFormSuccess] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [actionSuccess, setActionSuccess] = useState<string | null>(null);
   const [pendingActionId, setPendingActionId] = useState<number | null>(null);
 
   const queryParams = useMemo(
@@ -40,6 +42,12 @@ export function CoinListContainer() {
   const { data, isLoading, isError, error, refetch, isFetching } = useCoins(queryParams);
   const { data: detailData, isLoading: isLoadingDetail } = useCoin(formOpen ? editingId : null);
   const { create, update, updateStatus } = useCoinActions();
+
+  useEffect(() => {
+    if (!actionSuccess) return;
+    const timer = window.setTimeout(() => setActionSuccess(null), 5000);
+    return () => window.clearTimeout(timer);
+  }, [actionSuccess]);
 
   const updateParams = useCallback(
     (updates: Record<string, string | null>) => {
@@ -58,29 +66,41 @@ export function CoinListContainer() {
 
   const handleOpenCreate = () => {
     setFormError(null);
+    setFormSuccess(null);
     setEditingId(null);
     setFormOpen(true);
   };
 
   const handleOpenEdit = (item: AdminCoin) => {
     setFormError(null);
+    setFormSuccess(null);
     setEditingId(item.id);
     setFormOpen(true);
   };
 
   const handleFormSubmit = async (payload: CoinUpsertPayload) => {
     setFormError(null);
+    setFormSuccess(null);
+    setActionSuccess(null);
 
     try {
       if (editingId) {
         await update.mutateAsync({ id: editingId, payload });
+        setFormSuccess(t("page.coins.saveSuccess"));
+        setActionSuccess(t("page.coins.saveSuccess"));
       } else {
         await create.mutateAsync(payload);
+        setFormSuccess(t("page.coins.createSuccess"));
+        setActionSuccess(t("page.coins.createSuccess"));
       }
-      setFormOpen(false);
-      setEditingId(null);
+
+      window.setTimeout(() => {
+        setFormOpen(false);
+        setEditingId(null);
+        setFormSuccess(null);
+      }, 900);
     } catch (err) {
-      setFormError(err instanceof Error ? err.message : "Save failed.");
+      setFormError(err instanceof Error ? err.message : t("common.saveFailed"));
     }
   };
 
@@ -135,6 +155,11 @@ export function CoinListContainer() {
     <div className="space-y-6">
       <PageHeader titleKey="page.coins.title" descriptionKey="page.coins.description" action={headerAction} />
 
+      {actionSuccess ? (
+        <div role="status" className="rounded-lg border border-success/40 bg-success/10 px-4 py-3 text-sm text-success">
+          {actionSuccess}
+        </div>
+      ) : null}
       {actionError ? (
         <div role="alert" className="rounded-lg border border-danger/40 bg-danger/10 px-4 py-3 text-sm text-danger">
           {actionError}
@@ -218,12 +243,14 @@ export function CoinListContainer() {
         isLoadingDetail={Boolean(editingId && isLoadingDetail)}
         isPending={isFormPending}
         error={formError}
+        success={formSuccess}
         onSubmit={handleFormSubmit}
         onClose={() => {
           if (!isFormPending) {
             setFormOpen(false);
             setEditingId(null);
             setFormError(null);
+            setFormSuccess(null);
           }
         }}
       />

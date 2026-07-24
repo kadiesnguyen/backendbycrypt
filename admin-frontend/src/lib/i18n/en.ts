@@ -550,6 +550,8 @@ const en: Dictionary = {
 
   "page.coins.title": "Coin configuration",
   "page.coins.description": "Manage supported coins and tokens.",
+  "page.coins.saveSuccess": "Coin saved successfully.",
+  "page.coins.createSuccess": "Coin created successfully.",
 
   "page.depositPorts.title": "Deposit ports",
   "page.depositPorts.description": "Configure deposit gateways and addresses.",
