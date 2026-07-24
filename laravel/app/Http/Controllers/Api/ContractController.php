@@ -474,12 +474,18 @@ class ContractController extends Controller
                 DB::commit();
 
                 // Prepare response data
+                // `time` stays minutes (DB); expose seconds + selltime for UI countdown.
+                $timeMinutes = (float) $order->time;
                 $orderInfo = [
                     'id' => $order->id,
                     'hyzd' => $order->hyzd,
                     'coinname' => $order->coinname,
                     'buyprice' => $order->buyprice,
-                    'time' => $order->time * 60,
+                    'num' => $order->num,
+                    'time' => $timeMinutes,
+                    'time_seconds' => (int) round($timeMinutes * 60),
+                    'buytime' => $order->buytime,
+                    'selltime' => $order->selltime,
                     'timer_newprice' => $close,
                     'timer_buynum' => $order->num,
                     'timer_price' => $order->buyprice,
