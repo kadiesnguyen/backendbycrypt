@@ -502,21 +502,6 @@ class FinanceController extends Controller
                 ], 422);
             }
 
-            // Check withdrawal limits
-            if ($request->amount < $coin->txminnum) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Không thể rút ít hơn số tiền tối thiểu: ' . $coin->txminnum,
-                ], 422);
-            }
-
-            if ($request->amount > $coin->txmaxnum) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Không thể rút nhiều hơn số tiền tối đa: ' . $coin->txmaxnum,
-                ], 422);
-            }
-
             // Get user coin balance
             $userCoin = UserCoin::where('userid', $user->id)->first();
             if (!$userCoin) {
@@ -527,18 +512,37 @@ class FinanceController extends Controller
             }
 
             $coinname = $coin->name;
+            // Cast to float — decimal cast + FormData strings must not use lexicographic <.
+            // e.g. "13788.15" < "50" is TRUE as strings and falsely rejects small withdraws.
+            $available = (float) ($userCoin->{$coinname} ?? 0);
+            $amount = (float) $request->amount;
+
+            // Check withdrawal limits
+            if ($amount < (float) $coin->txminnum) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Không thể rút ít hơn số tiền tối thiểu: ' . $coin->txminnum,
+                ], 422);
+            }
+
+            if ((float) $coin->txmaxnum > 0 && $amount > (float) $coin->txmaxnum) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Không thể rút nhiều hơn số tiền tối đa: ' . $coin->txmaxnum,
+                ], 422);
+            }
 
             // Fee = amount × txsxf%. Receive = amount − fee (e.g. 1000 − 0.15).
             // Admin stores percent figure: 0.015 => 0.015%.
             $feePercent = (float) ($coin->txsxf ?? 0);
-            $fee = $feePercent > 0 ? ($request->amount * $feePercent / 100) : 0;
-            $num_real = max($request->amount - $fee, 0);
-            $total_needed = $request->amount;
+            $fee = $feePercent > 0 ? ($amount * $feePercent / 100) : 0;
+            $num_real = max($amount - $fee, 0);
+            $total_needed = $amount;
 
-            if ($userCoin->$coinname < $total_needed) {
+            if ($available + 1e-8 < $total_needed) {
                 return response()->json([
                     'status' => false,
-                    'message' => 'Số dư không đủ. Cần: ' . $total_needed,
+                    'message' => 'Số dư không đủ. Cần: ' . rtrim(rtrim(number_format($total_needed, 8, '.', ''), '0'), '.'),
                 ], 422);
             }
 
@@ -566,7 +570,7 @@ class FinanceController extends Controller
                 'username' => $user->username,
                 'wallet' => $walletLabel,
                 'coinname' => $coinname,
-                'num' => $request->amount,
+                'num' => $amount,
                 'fee' => $fee,
                 'mum' => $num_real_vnd,
                 'address' => $withdrawAddress,
@@ -579,14 +583,14 @@ class FinanceController extends Controller
 
             // Create bill record
             $remark = $isCrypto
-                ? ('Withdrawal ' . $walletLabel . ': ' . $cryptoAddress . ' (Amount: ' . $request->amount . ', Fee: ' . $fee . ', Receive: ' . $num_real . ')')
-                : ('Withdrawal to bank: ' . $user->bank_name . ' (Amount: ' . $request->amount . ', Fee: ' . $fee . ', Receive: ' . $num_real . ')');
+                ? ('Withdrawal ' . $walletLabel . ': ' . $cryptoAddress . ' (Amount: ' . $amount . ', Fee: ' . $fee . ', Receive: ' . $num_real . ')')
+                : ('Withdrawal to bank: ' . $user->bank_name . ' (Amount: ' . $amount . ', Fee: ' . $fee . ', Receive: ' . $num_real . ')');
             $billData = [
                 'uid' => $user->id,
                 'username' => $user->username,
                 'num' => $total_needed,
                 'coinname' => $coinname,
-                'afternum' => $userCoin->$coinname - $total_needed,
+                'afternum' => $available - $total_needed,
                 'type' => 2,
                 'addtime' => now()->toDateTimeString(),
                 'st' => 2,
@@ -596,7 +600,7 @@ class FinanceController extends Controller
 
             if ($decRe && $myzc && $bill) {
                 $coinLabel = strtoupper((string) $coinname);
-                $amountLabel = rtrim(rtrim(number_format((float) $request->amount, 8, '.', ''), '0'), '.');
+                $amountLabel = rtrim(rtrim(number_format($amount, 8, '.', ''), '0'), '.');
                 $when = now()->format('Y-m-d H:i:s');
                 Notice::query()->create([
                     'uid' => $user->id,
@@ -614,9 +618,9 @@ class FinanceController extends Controller
                     'status' => true,
                     'message' => 'Rút tiền đã được gửi thành công, đang chờ xử lý.',
                     'data' => [
-                        'amount' => $request->amount,
+                        'amount' => $amount,
                         'fee' => $fee,
-                        'fee_rate' => $feeRate,
+                        'fee_percent' => $feePercent,
                         'amount_received' => $num_real,
                         'amount_received_vnd' => $num_real_vnd,
                         'exchange_rate' => $bankRate,
