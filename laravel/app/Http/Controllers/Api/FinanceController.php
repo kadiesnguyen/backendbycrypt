@@ -241,9 +241,10 @@ class FinanceController extends Controller
                     'name' => $coin->name,
                     'title' => $coin->title,
                     'balance' => [
-                        'available' => number_format($available, 2, '.', ''),
-                        'freeze' => number_format($freeze, 2, '.', ''),
-                        'total' => number_format($total, 2, '.', ''),
+                        // Floor 2dp — never show more withdrawable than DB holds.
+                        'available' => number_format(floor($available * 100 + 1e-8) / 100, 2, '.', ''),
+                        'freeze' => number_format(floor($freeze * 100 + 1e-8) / 100, 2, '.', ''),
+                        'total' => number_format(floor($total * 100 + 1e-8) / 100, 2, '.', ''),
                     ],
                     'deposit_network' => $coin->czline,
                     'addresss' => $coin->czaddress,
@@ -512,10 +513,14 @@ class FinanceController extends Controller
             }
 
             $coinname = $coin->name;
-            // Cast to float — decimal cast + FormData strings must not use lexicographic <.
-            // e.g. "13788.15" < "50" is TRUE as strings and falsely rejects small withdraws.
+            // decimal:N cast returns strings — always compare as floats.
             $available = (float) ($userCoin->{$coinname} ?? 0);
             $amount = (float) $request->amount;
+
+            // UI balance is 2dp; "Max" can be up to ~0.01 above true balance after round-half-up.
+            if ($amount > $available && round($amount, 2) <= round($available, 2)) {
+                $amount = $available;
+            }
 
             // Check withdrawal limits
             if ($amount < (float) $coin->txminnum) {
@@ -539,7 +544,7 @@ class FinanceController extends Controller
             $num_real = max($amount - $fee, 0);
             $total_needed = $amount;
 
-            if ($available + 1e-8 < $total_needed) {
+            if (round($available, 8) < round($total_needed, 8)) {
                 return response()->json([
                     'status' => false,
                     'message' => 'Số dư không đủ. Cần: ' . rtrim(rtrim(number_format($total_needed, 8, '.', ''), '0'), '.'),

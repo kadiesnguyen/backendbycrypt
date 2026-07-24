@@ -398,15 +398,17 @@ class AuthController extends Controller
                 $column = $coin->name;
                 $frozenColumn = $column . '_d';
                 
-                // Số dư thông thường
-                $balance[$column] = number_format((float) ($userCoin->$column ?? 0.00), 2, '.', '');
-                
-                // Số dư bị đóng băng
-                $balance[$frozenColumn] = number_format((float) ($userCoin->$frozenColumn ?? 0.00), 2, '.', '');
-                
-                // Tổng số dư (thông thường + đóng băng)
-                $total = (float) ($userCoin->$column ?? 0.00) + (float) ($userCoin->$frozenColumn ?? 0.00);
-                $balance[$column . '_total'] = number_format($total, 2, '.', '');
+                // Floor to 2dp so "Max" withdraw never exceeds true balance (round-half-up lied).
+                $availableRaw = (float) ($userCoin->$column ?? 0.00);
+                $freezeRaw = (float) ($userCoin->$frozenColumn ?? 0.00);
+                $balance[$column] = number_format(floor($availableRaw * 100 + 1e-8) / 100, 2, '.', '');
+                $balance[$frozenColumn] = number_format(floor($freezeRaw * 100 + 1e-8) / 100, 2, '.', '');
+                $balance[$column . '_total'] = number_format(
+                    floor(($availableRaw + $freezeRaw) * 100 + 1e-8) / 100,
+                    2,
+                    '.',
+                    ''
+                );
             }
             
             // Convert user to array and add balance
