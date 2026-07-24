@@ -8,7 +8,9 @@ use App\Http\Resources\Admin\WithdrawalResource;
 use App\Models\Bill;
 use App\Models\Myzc;
 use App\Models\Notice;
+use App\Models\User;
 use App\Models\UserCoin;
+use App\Support\LocalTime;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -81,12 +83,14 @@ class WithdrawalController extends Controller
 
         $coinLabel = strtoupper(trim((string) $withdrawal->coinname));
         $amountLabel = rtrim(rtrim(number_format((float) $withdrawal->num, 8, '.', ''), '0'), '.');
+        $locale = User::query()->where('id', $withdrawal->userid)->value('ui_locale') ?? 'vi';
+        $whenLabel = LocalTime::formatNow($locale);
         Notice::query()->create([
             'uid' => $withdrawal->userid,
             'account' => $withdrawal->username,
             'title' => 'Rút ' . $coinLabel . ' thành công',
             'content' => 'Bạn đã rút thành công ' . $amountLabel . ' ' . $coinLabel
-                . ' lúc ' . $now . ' (UTC). Nếu bạn không nhận ra hoạt động này, vui lòng liên hệ với chúng tôi ngay lập tức.',
+                . ' lúc ' . $whenLabel . '. Nếu bạn không nhận ra hoạt động này, vui lòng liên hệ với chúng tôi ngay lập tức.',
             'addtime' => $now,
             'status' => 1,
             'user_view' => 1,
@@ -214,6 +218,14 @@ class WithdrawalController extends Controller
                 'status' => false,
                 'message' => 'Withdrawal order does not exist.',
             ], Response::HTTP_NOT_FOUND);
+        }
+
+        // Pending withdrawals already debited the wallet — only approve/reject.
+        if ((int) $withdrawal->status === 1) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Cannot delete a pending withdrawal. Approve or reject it instead.',
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
         if (!$withdrawal->delete()) {

@@ -66,8 +66,9 @@ export function WithdrawalList({
                         <button type="button" disabled={isBusy} onClick={() => onApprove(withdrawal)} className="rounded bg-primary px-2.5 py-1 text-xs font-medium text-background transition hover:opacity-90 disabled:opacity-40">{t("action.approve")}</button>
                         <button type="button" disabled={isBusy} onClick={() => onReject(withdrawal)} className="rounded border border-danger px-2.5 py-1 text-xs font-medium text-danger transition hover:bg-danger/10 disabled:opacity-40">{t("action.reject")}</button>
                       </>
-                    ) : null}
-                    <button type="button" disabled={isBusy} onClick={() => onDelete(withdrawal)} className="rounded border border-danger px-2.5 py-1 text-xs font-medium text-danger transition hover:bg-danger/10 disabled:opacity-40">{t("common.delete")}</button>
+                    ) : (
+                      <button type="button" disabled={isBusy} onClick={() => onDelete(withdrawal)} className="rounded border border-danger px-2.5 py-1 text-xs font-medium text-danger transition hover:bg-danger/10 disabled:opacity-40">{t("common.delete")}</button>
+                    )}
                   </div>
                 </td>
               </tr>

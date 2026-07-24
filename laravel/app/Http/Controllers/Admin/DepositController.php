@@ -8,7 +8,9 @@ use App\Http\Resources\Admin\DepositResource;
 use App\Models\Bill;
 use App\Models\Notice;
 use App\Models\Recharge;
+use App\Models\User;
 use App\Models\UserCoin;
+use App\Support\LocalTime;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -109,12 +111,14 @@ class DepositController extends Controller
 
                 $coinLabel = strtoupper(trim((string) $recharge->coin));
                 $amountLabel = rtrim(rtrim(number_format((float) $num, 8, '.', ''), '0'), '.');
+                $locale = User::query()->where('id', $recharge->uid)->value('ui_locale') ?? 'vi';
+                $whenLabel = LocalTime::formatNow($locale);
                 Notice::query()->create([
                     'uid' => $recharge->uid,
                     'account' => $recharge->username,
                     'title' => 'Gửi tiền ' . $coinLabel . ' thành công',
                     'content' => 'Bạn đã nạp thành công ' . $amountLabel . ' ' . $coinLabel
-                        . ' vào lúc ' . $now . ' (UTC). Nếu bạn không nhận ra hoạt động này, vui lòng liên hệ với chúng tôi ngay lập tức.',
+                        . ' vào lúc ' . $whenLabel . '. Nếu bạn không nhận ra hoạt động này, vui lòng liên hệ với chúng tôi ngay lập tức.',
                     'addtime' => $now,
                     'status' => 1,
                     'user_view' => 1,
