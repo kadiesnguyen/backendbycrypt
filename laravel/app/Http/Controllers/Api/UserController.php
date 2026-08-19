@@ -102,12 +102,13 @@ class UserController extends Controller
     public function verifyAccount(Request $request)
     {
         // Validate request
-        $validator = Validator::make($request->all(), [
-            'cccd' => 'required|string',
-            'fullname' => 'required|string',
-            'cardzm' => 'required|image|max:16384',
-            'cardfm' => 'required|image|max:16384',
-        ]);
+            $validator = Validator::make($request->all(), [
+                'cccd' => 'required|string|max:32',
+                'fullname' => 'required|string|max:120',
+                // file not image — iPhone HEIC / camera blobs fail Laravel's image rule.
+                'cardzm' => 'required|file|max:16384',
+                'cardfm' => 'required|file|max:16384',
+            ]);
 
         if ($validator->fails()) {
             return response()->json([
@@ -168,16 +169,20 @@ class UserController extends Controller
                 Notice::create([
                     'uid' => $user->id,
                     'account' => $user->username,
-                    'title' => 'Verification Information Submitted',
-                    'content' => 'Have submitted verification information. Please wait for admin approval.',
+                    'title' => 'Đã gửi xác minh CCCD',
+                    'content' => 'Bạn đã gửi thông tin xác minh. Vui lòng chờ quản trị viên duyệt.',
                     'addtime' => now()->toDateTimeString(),
                     'status' => 1,
                 ]);
 
-                // Log verification action
-                $ip = $request->ip();
-                $location = Location::get($ip);
-                $city = $location->city ?? 'Unknown';
+                $ip = (string) $request->ip();
+                $city = 'Unknown';
+                try {
+                    $location = Location::get($ip);
+                    $city = $location->city ?? 'Unknown';
+                } catch (\Throwable) {
+                    // Geo lookup must not fail the KYC submit.
+                }
 
                 UserLog::create([
                     'userid' => $user->id,
